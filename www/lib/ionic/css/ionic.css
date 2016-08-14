@@ -3504,7 +3504,11 @@ ion-infinite-scroll {
 
 /* If you change these, change platform.scss as well */
 .has-header {
+<<<<<<< HEAD
   top: 57px; }
+=======
+  top: 44px; }
+>>>>>>> origin/master
 
 .no-header {
   top: 0; }
@@ -5271,6 +5275,7 @@ ion-tabs.tabs-striped.tabs-color-active-dark .tab-item.tab-item-active, ion-tabs
   min-height: 100%;
   max-height: 100%;
   width: 275px;
+<<<<<<< HEAD
   background-color: #2A3F54; }
   .menu .scroll-content {
     z-index: 10; }
@@ -5280,6 +5285,13 @@ ion-tabs.tabs-striped.tabs-color-active-dark .tab-item.tab-item-active, ion-tabs
     border-radius: 0;
     border: 0;
     background: #2A3F54; }
+=======
+  background-color: #fff; }
+  .menu .scroll-content {
+    z-index: 10; }
+  .menu .bar-header {
+    z-index: 11; }
+>>>>>>> origin/master
 
 .menu-content {
   -webkit-transform: none;

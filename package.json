@@ -1,7 +1,13 @@
 {
+<<<<<<< HEAD
   "name": "inspire",
   "version": "1.1.1",
   "description": "inspire: An Ionic project",
+=======
+  "name": "test",
+  "version": "1.1.1",
+  "description": "test: An Ionic project",
+>>>>>>> origin/master
   "dependencies": {
     "gulp": "^3.5.6",
     "gulp-sass": "^2.0.4",
