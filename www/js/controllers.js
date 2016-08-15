@@ -29,6 +29,77 @@ angular.module('starter.controllers', [])
     $scope.modal.show();
   };
 
+  $scope.home = "";
+  $scope.trighome = function() {
+    if ($scope.home === "") {
+        $scope.home = "active";
+        $scope.homeshow = "display: block;";
+    } else if ($scope.home === "active") {
+        $scope.home = "";
+        $scope.homeshow = "display: none;";
+    }
+  };
+  $scope.order = "";
+  $scope.trigorder = function() {
+    if ($scope.order === "") {
+        $scope.order = "active";
+        $scope.ordershow = "display: block;";
+    } else if ($scope.order === "active") {
+        $scope.order = "";
+        $scope.ordershow = "display: none;";
+    }
+  };
+  $scope.prod = "";
+  $scope.trigprod = function() {
+    if ($scope.prod === "") {
+        $scope.prod = "active";
+        $scope.prodshow = "display: block;";
+    } else if ($scope.prod === "active") {
+        $scope.prod = "";
+        $scope.prodshow = "display: none;";
+    }
+  };
+  $scope.inven = "";
+  $scope.triginven = function() {
+    if ($scope.inven === "") {
+        $scope.inven = "active";
+        $scope.invenshow = "display: block;";
+    } else if ($scope.inven === "active") {
+        $scope.inven = "";
+        $scope.invenshow = "display: none;";
+    }
+  };
+  $scope.purc = "";
+  $scope.trigpurc = function() {
+    if ($scope.purc === "") {
+        $scope.purc = "active";
+        $scope.purcshow = "display: block;";
+    } else if ($scope.purc === "active") {
+        $scope.purc = "";
+        $scope.purcshow = "display: none;";
+    }
+  };
+  $scope.mast = "";
+  $scope.trigmast = function() {
+    if ($scope.mast === "") {
+        $scope.mast = "active";
+        $scope.mastshow = "display: block;";
+    } else if ($scope.mast === "active") {
+        $scope.mast = "";
+        $scope.mastshow = "display: none;";
+    }
+  };
+  $scope.sett = "";
+  $scope.trigsett = function() {
+    if ($scope.sett === "") {
+        $scope.sett = "active";
+        $scope.settshow = "display: block;";
+    } else if ($scope.sett === "active") {
+        $scope.sett = "";
+        $scope.settshow = "display: none;";
+    }
+  };
+
   // Perform the login action when the user submits the login form
   $scope.doLogin = function() {
     console.log('Doing login', $scope.loginData);
