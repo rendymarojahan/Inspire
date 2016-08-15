@@ -13,9 +13,9 @@
         <div class="nav_menu">
           <nav>
             <ul class="nav navbar-nav navbar-right">
-              <li class="open">
+              <li ng-click="trigprofile()" class="{{profile}}">
                 <a class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
-                  <img src="img/img.jpg" alt="">John Doe
+                  <img src="img/img.jpg" alt="">Fredy Chandra
                   <span class=" fa fa-angle-down"></span>
                 </a>
                 <ul class="dropdown-menu dropdown-usermenu pull-right">
@@ -31,7 +31,7 @@
                 </ul>
               </li>
 
-              <li role="presentation" class="dropdown">
+              <li ng-click="trigmessage()" role="presentation" class="dropdown {{message}}">
                 <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="false">
                   <i class="fa fa-envelope-o"></i>
                   <span class="badge bg-green">6</span>
@@ -103,9 +103,7 @@
   </ion-side-menu-content>
 
   <ion-side-menu side="left" width="230">
-    <ion-header-bar >
-      <a menu-close ng-click="login()" class="site_title"><i class="fa fa-paw"></i> <span>Inspire</span></a>
-    </ion-header-bar>
+    <a menu-close ng-click="login()" class="site_title"><i class="fa fa-paw"></i> <span>Inspire</span></a>
     <ion-content>
       <div class="profile">
         <div class="profile_pic">

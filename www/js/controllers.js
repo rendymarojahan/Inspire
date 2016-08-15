@@ -29,6 +29,24 @@ angular.module('starter.controllers', [])
     $scope.modal.show();
   };
 
+  $scope.message = "";
+  $scope.trigmessage = function() {
+    if ($scope.message === "") {
+        $scope.message = "open";
+    } else if ($scope.message === "open") {
+        $scope.message = "";
+    }
+  };
+
+  $scope.profile = "";
+  $scope.trigprofile = function() {
+    if ($scope.profile === "") {
+        $scope.profile = "open";
+    } else if ($scope.profile === "open") {
+        $scope.profile = "";
+    }
+  };
+
   $scope.home = "";
   $scope.trighome = function() {
     if ($scope.home === "") {
