@@ -174,4 +174,100 @@ a, a:visited, a:focus, a:active, :visited, :focus, :active, .btn:focus, .btn:act
     position: absolute;
     top: 0;
 }
+.nav_menu {
+    float: left;
+    background: #EDEDED;
+    margin-bottom: 10px;
+    width: 100%;
+    position: relative;
+    height: 51px;
+}
+.toggle {
+    float: left;
+    margin: 0;
+    padding-top: 16px;
+    width: 70px;
+}
+.toggle a {
+    padding: 15px 15px 0;
+    margin: 0;
+    cursor: pointer;
+}
+a {
+    color: #5A738E;
+    text-decoration: none;
+}
+.toggle a i {
+    font-size: 26px;
+}
+.top_nav {
+    width: 100%;
+    margin: 0;
+}
+.top_nav .navbar-right {
+    margin: 0;
+    width: 70%;
+    float: right;
+}
+.top_nav .navbar-right li {
+    display: inline-block;
+    float: right;
+    position: static;
+}
+.nav.navbar-nav>li>a {
+    color: #515356 !important;
+}
+.navbar-brand, .navbar-nav>li>a {
+    font-weight: 500;
+    color: #ECF0F1 !important;
+    margin-left: 0 !important;
+    line-height: 32px;
+}
+.nav>li>a>img {
+    max-width: none;
+}
+.navbar-nav .open .dropdown-menu.pull-right {
+    position: absolute;
+    background: #fff;
+    margin-top: 0;
+    border: 1px solid #D9DEE4;
+    -webkit-box-shadow: none;
+    right: 0;
+    left: auto;
+    width: 220px;
+}
+.user-profile img {
+    width: 29px;
+    height: 29px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+.dropdown-menu.pull-right {
+    right: 0;
+    left: auto;
+}
+.dropdown-menu {
+    border: medium none;
+    box-shadow: none;
+    display: none;
+    float: left;
+    font-size: 12px;
+    left: 0;
+    list-style: none outside none;
+    padding: 0;
+    position: absolute;
+    text-shadow: none;
+    top: 100%;
+    z-index: 9998;
+    border: 1px solid #D9DEE4;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+.top_nav .dropdown-menu li {
+    width: 100%;
+}
+
+.open>.dropdown-menu {
+    display: block;
+}
 /* Empty. Add your own CSS if you like */
