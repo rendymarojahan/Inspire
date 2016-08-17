@@ -141,5 +141,231 @@ angular.module('starter.controllers', [])
   ];
 })
 
+.controller('orderCtrl', function($scope, ionicDatePicker, PickTransactionServices) {
+  $scope.OrderDate = '';
+  $scope.DeadlineDate = '';
+  var tanggal = {
+    callback: function (val) {  //Mandatory
+      $scope.OrderDate = new Date(val);
+      PickTransactionServices.updateDate(val);
+      console.log('Return value from the datepicker popup is : ' + val, new Date(val));
+    },
+    disabledDates: [            //Optional
+      new Date(2016, 2, 16),
+      new Date(2015, 3, 16),
+      new Date(2015, 4, 16),
+      new Date(2015, 5, 16),
+      new Date('Wednesday, August 12, 2015'),
+      new Date("08-16-2016"),
+      new Date(1439676000000)
+    ],
+    from: new Date(2012, 1, 1), //Optional
+    to: new Date(2016, 10, 30), //Optional
+    inputDate: new Date(),      //Optional
+    mondayFirst: true,          //Optional
+    disableWeekdays: [0],       //Optional
+    closeOnSelect: false,       //Optional
+    templateType: 'popup'       //Optional
+  };
+  var deadline = {
+    callback: function (val) {  //Mandatory
+      $scope.DeadlineDate = new Date(val);
+      PickTransactionServices.updateDate(val);
+      console.log('Return value from the datepicker popup is : ' + val, new Date(val));
+    },
+    disabledDates: [            //Optional
+      new Date(2016, 2, 16),
+      new Date(2015, 3, 16),
+      new Date(2015, 4, 16),
+      new Date(2015, 5, 16),
+      new Date('Wednesday, August 12, 2015'),
+      new Date("08-16-2016"),
+      new Date(1439676000000)
+    ],
+    from: new Date(2012, 1, 1), //Optional
+    to: new Date(2016, 10, 30), //Optional
+    inputDate: new Date(),      //Optional
+    mondayFirst: true,          //Optional
+    disableWeekdays: [0],       //Optional
+    closeOnSelect: false,       //Optional
+    templateType: 'popup'       //Optional
+  };
+
+  $scope.openDatePicker = function(){
+    ionicDatePicker.openDatePicker(tanggal);
+  };
+  $scope.DeadlinePicker = function(){
+    ionicDatePicker.openDatePicker(deadline);
+  };
+
+  $scope.new = "btn-default";
+  $scope.repair = "btn-default";
+  $scope.trignew = function() {
+    $scope.new = "btn-primary";
+    $scope.repair = "btn-default";
+  };
+  $scope.trigrepair = function() {
+    $scope.new = "btn-default";
+    $scope.repair = "btn-primary";
+  };
+})
+
+.controller('registrationCtrl', function($scope, $state, $ionicLoading, MembersFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
+
+  $scope.user = {};
+
+  // Gender
+  $scope.male = "";
+  $scope.female = "";
+  $scope.trigmale = function() {
+    $scope.male = "checked";
+    $scope.female = "";
+    $scope.user.gender = "male";
+  };
+  $scope.trigfemale = function() {
+    $scope.male = "";
+    $scope.female = "checked";
+    $scope.user.gender = "female";
+  };
+
+  // User Level
+  $scope.admin = "";
+  $scope.finance = "";
+  $scope.sales = "";
+  $scope.customer = "";
+  $scope.trigadmin = function() {
+    $scope.admin = "checked";
+    $scope.finance = "";
+    $scope.sales = "";
+    $scope.customer = "";
+    $scope.user.level = "admin";
+  };
+  $scope.trigfinance = function() {
+    $scope.admin = "";
+    $scope.finance = "checked";
+    $scope.sales = "";
+    $scope.customer = "";
+    $scope.user.level = "finance";
+  };
+  $scope.trigsales = function() {
+    $scope.admin = "";
+    $scope.finance = "";
+    $scope.sales = "checked";
+    $scope.customer = "";
+    $scope.user.level = "sales";
+  };
+  $scope.trigcustomer = function() {
+    $scope.admin = "";
+    $scope.finance = "";
+    $scope.sales = "";
+    $scope.customer = "checked";
+    $scope.user.level = "customer";
+  };
+
+  $scope.createMember = function (user) {
+      var email = user.email;
+      var password = user.password;
+
+      // Validate form data
+      if (typeof user.fullname === 'undefined' || user.fullname === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter your name"
+          return;
+      }
+      if (typeof user.picture === 'undefined' || user.picture === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please select your picture"
+          return;
+      }
+      if (typeof user.email === 'undefined' || user.email === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter your email"
+          return;
+      }
+      if (typeof user.password === 'undefined' || user.password === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter your password"
+          return;
+      }
+      if (typeof user.gender === 'undefined' || user.gender === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please select your gender"
+          return;
+      }
+      if (typeof user.level === 'undefined' || user.level === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please select your level"
+          return;
+      }
+
+      $ionicLoading.show({
+          template: '<ion-spinner icon="ios"></ion-spinner><br>Registering...'
+      });
+
+      fb.createUser({
+          email: user.email,
+          password: user.password
+      }, function (error, userData) {
+          if (error) {
+              switch (error.code) {
+                  case "EMAIL_TAKEN":
+                      $ionicLoading.hide();
+                      $ionicPopup.alert({title: 'Register Failed', template: 'The email entered is already in use!'});
+                      break;
+                  case "INVALID_EMAIL":
+                      $ionicLoading.hide();
+                      $ionicPopup.alert({title: 'Register Failed', template: 'The specified email is not a valid email!'});
+                      break;
+                  default:
+                      $ionicLoading.hide();
+                      $ionicPopup.alert({title: 'Register Failed', template: 'Oops. Something went wrong!'});
+              }
+          } else {
+              fb.authWithPassword({
+                  "email": user.email,
+                  "password": user.password
+              }, function (error, authData) {
+                  if (error) {
+                      $ionicLoading.hide();
+                      $ionicPopup.alert({title: 'Register Failed', template: 'Error. Login failed!'});
+                  } else {
+
+                      /* PREPARE DATA FOR FIREBASE*/
+                      $scope.temp = {
+                          fullname: user.fullname,
+                          picture: user.picture,
+                          email: user.email,
+                          gender: user.gender,
+                          level: user.level,
+                          datecreated: Date.now(),
+                          dateupdated: Date.now()
+                      }
+
+                      /* SAVE MEMBER DATA */
+                      var membersref = MembersFactory.ref();
+                      var newUser = membersref.child(authData.uid);
+                      newUser.update($scope.temp, function (ref) {
+                      addImage = newUser.child("images");
+                      });
+                      MembersFactory.getMember(authData).then(function (thisuser) {
+                        $scope.fullname = thisuser.fullname;
+                        /* Save user data for later use */
+                        myCache.put('thisGroupId', thisuser.group_id);
+                        myCache.put('thisUserName', $scope.fullname());
+                        myCache.put('thisMemberId', authData.uid);
+                        myCache.put('thisPublicId', thisuser.public_id);
+                        CurrentUserService.updateUser(thisuser);
+                      });
+
+                      $ionicLoading.hide();
+                      $state.go('playlists');
+                  }
+              });
+          }
+      });
+  };
+
+})
+
 .controller('PlaylistCtrl', function($scope, $stateParams) {
 });

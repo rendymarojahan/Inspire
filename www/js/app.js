@@ -1,12 +1,12 @@
 // Ionic Starter App
-
+var fb = new Firebase("https://ijewell.firebaseio.com");
 // angular.module is a global place for creating, registering and retrieving Angular modules
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
 // 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic', 'starter.controllers'])
+angular.module('starter', ['ionic', 'starter.controllers', 'ionic-datepicker', 'starter.services', 'angular.filter', 'firebase', 'ngStorage', 'ngCordova'])
 
-.run(function($ionicPlatform) {
+.run(function($ionicPlatform, $ionicLoading) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -37,6 +37,26 @@ angular.module('starter', ['ionic', 'starter.controllers'])
     views: {
       'menuContent': {
         templateUrl: 'templates/search.html'
+      }
+    }
+  })
+
+  .state('app.order', {
+    url: '/order',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/order.html',
+        controller: 'orderCtrl'
+      }
+    }
+  })
+
+  .state('app.registration', {
+    url: '/registration',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/registration.html',
+        controller: 'registrationCtrl'
       }
     }
   })
