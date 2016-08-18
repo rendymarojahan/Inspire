@@ -1,6 +1,6 @@
 angular.module('starter.controllers', [])
 
-.controller('AppCtrl', function($scope, $ionicModal, $timeout) {
+.controller('AppCtrl', function($scope, $ionicModal, $timeout, CurrentUserService) {
 
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
@@ -28,6 +28,10 @@ angular.module('starter.controllers', [])
   $scope.login = function() {
     $scope.modal.show();
   };
+
+  $scope.fullname = CurrentUserService.fullname;
+  $scope.photo = CurrentUserService.picture;
+  $scope.level = CurrentUserService.level;
 
   $scope.message = "";
   $scope.trigmessage = function() {
@@ -130,7 +134,7 @@ angular.module('starter.controllers', [])
   };
 })
 
-.controller('PlaylistsCtrl', function($scope) {
+.controller('dashboardCtrl', function($scope) {
   $scope.playlists = [
     { title: 'Reggae', id: 1 },
     { title: 'Chill', id: 2 },
@@ -213,6 +217,7 @@ angular.module('starter.controllers', [])
 .controller('registrationCtrl', function($scope, $state, $ionicLoading, MembersFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
 
   $scope.user = {};
+  $scope.item = {'photo': ''};
 
   // Gender
   $scope.male = "";
@@ -220,12 +225,12 @@ angular.module('starter.controllers', [])
   $scope.trigmale = function() {
     $scope.male = "checked";
     $scope.female = "";
-    $scope.user.gender = "male";
+    $scope.gender = "male";
   };
   $scope.trigfemale = function() {
     $scope.male = "";
     $scope.female = "checked";
-    $scope.user.gender = "female";
+    $scope.gender = "female";
   };
 
   // User Level
@@ -238,43 +243,59 @@ angular.module('starter.controllers', [])
     $scope.finance = "";
     $scope.sales = "";
     $scope.customer = "";
-    $scope.user.level = "admin";
+    $scope.level = "admin";
   };
   $scope.trigfinance = function() {
     $scope.admin = "";
     $scope.finance = "checked";
     $scope.sales = "";
     $scope.customer = "";
-    $scope.user.level = "finance";
+    $scope.level = "finance";
   };
   $scope.trigsales = function() {
     $scope.admin = "";
     $scope.finance = "";
     $scope.sales = "checked";
     $scope.customer = "";
-    $scope.user.level = "sales";
+    $scope.level = "sales";
   };
   $scope.trigcustomer = function() {
     $scope.admin = "";
     $scope.finance = "";
     $scope.sales = "";
     $scope.customer = "checked";
-    $scope.user.level = "customer";
+    $scope.level = "customer";
+  };
+
+  $scope.test = function() {
+    $ionicLoading.show({
+          template: '<ion-spinner icon="ios"></ion-spinner><br>Registering...'
+      });
   };
 
   $scope.createMember = function (user) {
       var email = user.email;
       var password = user.password;
+      var filesSelected = document.getElementById("nameImg").files;
+      if (filesSelected.length > 0) {
+        var fileToLoad = filesSelected[0];
+        var fileReader = new FileReader();
+        fileReader.onload = function(fileLoadedEvent) {
+          var textAreaFileContents = document.getElementById(
+            "textAreaFileContents"
+          );
+          $scope.item = {
+            photo: fileLoadedEvent.target.result
+          };
+        };
+
+        fileReader.readAsDataURL(fileToLoad);
+      }
 
       // Validate form data
       if (typeof user.fullname === 'undefined' || user.fullname === '') {
           $scope.hideValidationMessage = false;
           $scope.validationMessage = "Please enter your name"
-          return;
-      }
-      if (typeof user.picture === 'undefined' || user.picture === '') {
-          $scope.hideValidationMessage = false;
-          $scope.validationMessage = "Please select your picture"
           return;
       }
       if (typeof user.email === 'undefined' || user.email === '') {
@@ -285,16 +306,6 @@ angular.module('starter.controllers', [])
       if (typeof user.password === 'undefined' || user.password === '') {
           $scope.hideValidationMessage = false;
           $scope.validationMessage = "Please enter your password"
-          return;
-      }
-      if (typeof user.gender === 'undefined' || user.gender === '') {
-          $scope.hideValidationMessage = false;
-          $scope.validationMessage = "Please select your gender"
-          return;
-      }
-      if (typeof user.level === 'undefined' || user.level === '') {
-          $scope.hideValidationMessage = false;
-          $scope.validationMessage = "Please select your level"
           return;
       }
 
@@ -331,12 +342,15 @@ angular.module('starter.controllers', [])
                   } else {
 
                       /* PREPARE DATA FOR FIREBASE*/
+                      var photo = $scope.item.photo;
+                      var gender = $scope.gender;
+                      var level = $scope.level;
                       $scope.temp = {
                           fullname: user.fullname,
-                          picture: user.picture,
+                          picture: photo,
                           email: user.email,
-                          gender: user.gender,
-                          level: user.level,
+                          gender: gender,
+                          level: level,
                           datecreated: Date.now(),
                           dateupdated: Date.now()
                       }
@@ -348,22 +362,61 @@ angular.module('starter.controllers', [])
                       addImage = newUser.child("images");
                       });
                       MembersFactory.getMember(authData).then(function (thisuser) {
-                        $scope.fullname = thisuser.fullname;
                         /* Save user data for later use */
-                        myCache.put('thisGroupId', thisuser.group_id);
-                        myCache.put('thisUserName', $scope.fullname());
+                        myCache.put('thisUserName', thisuser.fullname);
                         myCache.put('thisMemberId', authData.uid);
-                        myCache.put('thisPublicId', thisuser.public_id);
                         CurrentUserService.updateUser(thisuser);
                       });
 
                       $ionicLoading.hide();
-                      $state.go('playlists');
+                      $state.go('app.playlists');
                   }
               });
           }
       });
   };
+
+})
+
+.controller('loginCtrl', function($scope, $rootScope, $stateParams, $ionicHistory, $cacheFactory, $ionicLoading, $ionicPopup, $state, MembersFactory, myCache, CurrentUserService) {
+
+  $scope.user = {};
+    $scope.doLogIn = function (user) {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Loggin In...'
+        });
+
+        /* Check user fields*/
+        if (!user.email || !user.password) {
+            $ionicLoading.hide();
+            $ionicPopup.alert({title: 'Login Failed', template: 'Please check your Email or Password!'});
+            return;
+        }
+
+        /* Authenticate User */
+        fb.authWithPassword({
+            "email": user.email,
+            "password": user.password
+        }, function (error, authData) {
+            if (error) {
+                //console.log("Login Failed!", error);
+                $ionicLoading.hide();
+                $ionicPopup.alert({title: 'Login Failed', template: 'Check your credentials and try again!'});
+            } else {
+                
+                MembersFactory.getMember(authData).then(function (thisuser) {
+                    
+                    /* Save user data for later use */
+                    myCache.put('thisUserName', thisuser.fullname);
+                    myCache.put('thisUserLevel', thisuser.level);
+                    myCache.put('thisMemberId', authData.uid);
+                    CurrentUserService.updateUser(thisuser);
+                        $ionicLoading.hide();
+                        $state.go('app.dashboard', { memberId: authData.uid, level: thisuser.level });
+                });
+            }
+        });
+    }
 
 })
 

@@ -6,26 +6,54 @@ var fb = new Firebase("https://ijewell.firebaseio.com");
 // 'starter.controllers' is found in controllers.js
 angular.module('starter', ['ionic', 'starter.controllers', 'ionic-datepicker', 'starter.services', 'angular.filter', 'firebase', 'ngStorage', 'ngCordova'])
 
-.run(function($ionicPlatform, $ionicLoading) {
+.run(function($ionicPlatform, $rootScope, $ionicLoading, $state, Auth, $cordovaStatusbar, $cordovaSplashscreen, $cordovaTouchID, $localStorage) {
   $ionicPlatform.ready(function() {
-    // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
-    // for form inputs)
-    if (window.cordova && window.cordova.plugins.Keyboard) {
-      cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
-      cordova.plugins.Keyboard.disableScroll(true);
-
-    }
-    if (window.StatusBar) {
-      // org.apache.cordova.statusbar required
-      StatusBar.styleDefault();
-    }
+    setTimeout(function () {
+            if (window.cordova && window.cordova.plugins.Keyboard) {
+                cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
+                cordova.plugins.Keyboard.disableScroll(true);
+                }
+    }, 300);
+    setTimeout(function () {
+            if (typeof $localStorage.enableTouchID === 'undefined' || $localStorage.enableTouchID === '' || $localStorage.enableTouchID === false) {
+                //should already be on login page
+                $state.go("login");
+            } else {
+                $cordovaTouchID.checkSupport().then(function () {
+                    $cordovaTouchID.authenticate("All users with a Touch ID profile on the device will have access to this app").then(function () {
+                        $state.go("loginauto");
+                    }, function (error) {
+                        console.log(JSON.stringify(error));
+                        $state.go("login");
+                    });
+                }, function (error) {
+                    console.log(JSON.stringify(error));
+                    $state.go("login");
+                });
+            }
+    }, 750);
+    $rootScope.$on("$stateChangeError", function (event, toState, toParams, fromState, fromParams, error) {
+            if (error === "AUTH_REQUIRED") {
+                $ionicHistory.clearCache();
+                $rootScope.authData = '';
+                fb.unauth();
+                $state.go("login");
+            }
+    });
   });
 })
 
 .config(function($stateProvider, $urlRouterProvider) {
   $stateProvider
 
-    .state('app', {
+  .state('login', {
+    url: '/login',
+    cache: false,
+    templateUrl: 'templates/login.html',
+    controller: 'loginCtrl'
+  })
+
+  .state('app', {
     url: '/app',
     abstract: true,
     templateUrl: 'templates/menu.html',
@@ -61,6 +89,8 @@ angular.module('starter', ['ionic', 'starter.controllers', 'ionic-datepicker', '
     }
   })
 
+  
+
   .state('app.browse', {
       url: '/browse',
       views: {
@@ -69,12 +99,12 @@ angular.module('starter', ['ionic', 'starter.controllers', 'ionic-datepicker', '
         }
       }
     })
-    .state('app.playlists', {
-      url: '/playlists',
+    .state('app.dashboard', {
+      url: '/dashboard/:memberId/:level',
       views: {
         'menuContent': {
-          templateUrl: 'templates/playlists.html',
-          controller: 'PlaylistsCtrl'
+          templateUrl: 'templates/dashboard.html',
+          controller: 'dashboardCtrl'
         }
       }
     })
@@ -89,5 +119,5 @@ angular.module('starter', ['ionic', 'starter.controllers', 'ionic-datepicker', '
     }
   });
   // if none of the above states are matched, use this as the fallback
-  $urlRouterProvider.otherwise('/app/playlists');
+  $urlRouterProvider.otherwise('/app');
 });

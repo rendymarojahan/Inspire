@@ -15,7 +15,7 @@
             <ul class="nav navbar-nav navbar-right">
               <li ng-click="trigprofile()" class="{{profile}}">
                 <a class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
-                  <img src="img/img.jpg" alt="">Fredy Chandra
+                  <img src="{{ photo }}" alt="">{{fullname}}
                   <span class=" fa fa-angle-down"></span>
                 </a>
                 <ul class="dropdown-menu dropdown-usermenu pull-right">
@@ -39,45 +39,9 @@
                 <ul id="menu1" class="dropdown-menu list-unstyled msg_list" role="menu">
                   <li>
                     <a>
-                      <span class="image"><img src="img/img.jpg" alt="Profile Image" /></span>
+                      <span class="image"><img src="{{ photo }}" alt="Profile Image" /></span>
                       <span>
-                        <span>John Smith</span>
-                        <span class="time">3 mins ago</span>
-                      </span>
-                      <span class="message">
-                        Film festivals used to be do-or-die moments for movie makers. They were where...
-                      </span>
-                    </a>
-                  </li>
-                  <li>
-                    <a>
-                      <span class="image"><img src="img/img.jpg" alt="Profile Image" /></span>
-                      <span>
-                        <span>John Smith</span>
-                        <span class="time">3 mins ago</span>
-                      </span>
-                      <span class="message">
-                        Film festivals used to be do-or-die moments for movie makers. They were where...
-                      </span>
-                    </a>
-                  </li>
-                  <li>
-                    <a>
-                      <span class="image"><img src="img/img.jpg" alt="Profile Image" /></span>
-                      <span>
-                        <span>John Smith</span>
-                        <span class="time">3 mins ago</span>
-                      </span>
-                      <span class="message">
-                        Film festivals used to be do-or-die moments for movie makers. They were where...
-                      </span>
-                    </a>
-                  </li>
-                  <li>
-                    <a>
-                      <span class="image"><img src="img/img.jpg" alt="Profile Image" /></span>
-                      <span>
-                        <span>John Smith</span>
+                        <span>{{fullname}}</span>
                         <span class="time">3 mins ago</span>
                       </span>
                       <span class="message">
@@ -107,11 +71,11 @@
     <ion-content>
       <div class="profile">
         <div class="profile_pic">
-          <img src="img/img.jpg" alt="..." class="img-circle profile_img">
+          <img src="{{ photo }}" alt="..." class="img-circle profile_img">
         </div>
         <div class="profile_info">
           <span>Welcome,</span>
-          <h2>Fredy Chandra</h2>
+          <h2>{{fullname}}</h2>
         </div>
       </div>
       <br />
@@ -119,7 +83,7 @@
       <!-- sidebar menu -->
       <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
         <div class="menu_section">
-          <h3>General</h3>
+          <h3>{{level}}</h3>
           <ul class="nav side-menu">
             <li ng-click="trighome()" class="{{home}}"><a><i class="fa fa-home"></i> Home <span class="fa fa-chevron-down"></span></a>
               <ul class="nav child_menu" style={{homeshow}}>

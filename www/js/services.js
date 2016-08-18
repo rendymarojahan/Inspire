@@ -684,8 +684,8 @@ angular.module('starter.services', [])
 .service("CurrentUserService", function () {
         var thisUser = this;
         thisUser.updateUser = function (user) {
-            this.firstname = user.firstname;
-            this.surename = user.surename;
+            this.fullname = user.fullname;
+            this.level = user.level;
             this.email = user.email;
             this.group_id = user.group_id;
             this.public_id = user.public_id;
@@ -693,7 +693,7 @@ angular.module('starter.services', [])
             this.defaultbalance = user.defaultbalance;
             this.lastdate = user.lastdate;
             this.group_name = user.group_name;
-            this.photo = user.photo;
+            this.picture = user.picture;
             this.note = user.note;
             this.phone = user.phone;
         }
