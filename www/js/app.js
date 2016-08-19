@@ -89,7 +89,35 @@ angular.module('starter', ['ionic', 'starter.controllers', 'ionic-datepicker', '
     }
   })
 
-  
+  .state('app.employee', {
+    url: '/employee',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/employee.html',
+        controller: 'employeeCtrl'
+      }
+    }
+  })
+
+  .state('app.contact', {
+    url: '/contact',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/contact.html',
+        controller: 'contactCtrl'
+      }
+    }
+  })
+
+  .state('app.profile', {
+    url: '/profile',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/profile.html',
+        controller: 'profileCtrl'
+      }
+    }
+  })
 
   .state('app.browse', {
       url: '/browse',
