@@ -90,11 +90,71 @@ angular.module('starter', ['ionic', 'starter.controllers', 'ionic-datepicker', '
   })
 
   .state('app.employee', {
-    url: '/employee',
+    url: '/employee/:employeeId',
     views: {
       'menuContent': {
         templateUrl: 'templates/employee.html',
         controller: 'employeeCtrl'
+      }
+    }
+  })
+
+  .state('app.inventory', {
+    url: '/inventory',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/inventory.html',
+        controller: 'inventoryCtrl'
+      }
+    }
+  })
+
+  .state('app.rawinventory', {
+    url: '/rawinventory/:inventoryId',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/rawinventory.html',
+        controller: 'rawinventoryCtrl'
+      }
+    }
+  })
+
+  .state('app.addinventory', {
+    url: '/addinventory',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/addinventory.html',
+        controller: 'addinventoryCtrl'
+      }
+    }
+  })
+
+  .state('app.material', {
+    url: '/material',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/material.html',
+        controller: 'materialCtrl'
+      }
+    }
+  })
+
+  .state('app.rawmaterial', {
+    url: '/rawmaterial/:materialId',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/rawmaterial.html',
+        controller: 'rawmaterialCtrl'
+      }
+    }
+  })
+
+  .state('app.addmaterial', {
+    url: '/addmaterial',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/addmaterial.html',
+        controller: 'addmaterialCtrl'
       }
     }
   })

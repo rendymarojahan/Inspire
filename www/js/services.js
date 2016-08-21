@@ -59,18 +59,72 @@ angular.module('starter.services', [])
         };
 })
 
-.factory('ContactsFactory', function ($firebaseArray, $q, myCache, MembersFactory, CurrentUserService) {
+.factory('MasterFactory', function ($firebaseArray, $q, myCache, CurrentUserService) {
         var ref = {};
-        var contactsRef = {};
+        var materialsRef = {};
+        var inventoriesRef = {};
+        var raws = {};
+        var mRef = fb.child("master").child("material");
+        var iRef = fb.child("master").child("inventory");
         return {
             ref: function () {
                 ref = fb.child("publics").child(thisPublicId).child(thisUserId);
                 return ref;
             },
+            mRef: function () {
+                return mRef;
+            },
+            iRef: function () {
+                return iRef;
+            },
+            getMaterials: function () {
+                ref = fb.child("master").child("material").orderByChild('jenis');
+                materialsRef = $firebaseArray(ref);
+                return materialsRef;
+            },
+            getMaterial: function (materialid) {
+                var thisMaterial = materialsRef.$getRecord(materialid);
+                return thisMaterial;
+            },
+            getInventories: function () {
+                ref = fb.child("master").child("inventory").orderByChild('name');
+                inventoriesRef = $firebaseArray(ref);
+                return inventoriesRef;
+            },
+            getInventory: function (inventoryid) {
+                var thisInventory = inventoriesRef.$getRecord(inventoryid);
+                return thisInventory;
+            },
+            saveMaterial: function (temp) {
+                materialsRef.$save(temp).then(function (ref) {
+                    //ref.key() = posting.$id;
+                });
+            }
+            
+            
+        };
+})
+
+.factory('ContactsFactory', function ($firebaseArray, $q, myCache, MembersFactory, CurrentUserService) {
+        var ref = {};
+        var contactsRef = {};
+        var eRef = fb.child("employees");
+        return {
+            ref: function () {
+                ref = fb.child("publics").child(thisPublicId).child(thisUserId);
+                return ref;
+            },
+            eRef: function () {
+                return eRef;
+            },
             getContacts: function () {
                 ref = fb.child("employees").orderByKey();
                 contactsRef = $firebaseArray(ref);
                 return contactsRef;
+            },
+            getEmployee: function (employeeid) {
+                var thisEmployee = contactsRef.$getRecord(employeeid);
+                return thisEmployee;
             },
             
             

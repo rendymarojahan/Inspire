@@ -219,6 +219,10 @@ angular.module('starter.controllers', [])
   $scope.user = {};
   $scope.item = {'photo': ''};
 
+  $scope.$on('$ionicView.beforeEnter', function () {
+    $scope.item.photo = PickTransactionServices.photoSelected;
+  });
+
   // Gender
   $scope.male = "";
   $scope.female = "";
@@ -267,6 +271,26 @@ angular.module('starter.controllers', [])
     $scope.level = "customer";
   };
 
+  $scope.takepic = function() {
+    
+    var filesSelected = document.getElementById("nameImg").files;
+    if (filesSelected.length > 0) {
+      var fileToLoad = filesSelected[0];
+      var fileReader = new FileReader();
+      fileReader.onload = function(fileLoadedEvent) {
+        var textAreaFileContents = document.getElementById(
+          "textAreaFileContents"
+        );
+        $scope.item = {
+          photo: fileLoadedEvent.target.result
+        };
+        PickTransactionServices.updatePhoto($scope.item.photo);
+      };
+
+      fileReader.readAsDataURL(fileToLoad);
+    }
+  };
+
   $scope.createMember = function (user) {
       var email = user.email;
       var password = user.password;
@@ -281,6 +305,7 @@ angular.module('starter.controllers', [])
           $scope.item = {
             photo: fileLoadedEvent.target.result
           };
+          PickTransactionServices.updatePhoto($scope.item.photo);
         };
 
         fileReader.readAsDataURL(fileToLoad);
@@ -371,14 +396,72 @@ angular.module('starter.controllers', [])
   };
 })
 
-.controller('employeeCtrl', function($scope, $state, $ionicLoading, MembersFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
+.controller('employeeCtrl', function($scope, $state, $stateParams, $ionicHistory, $ionicLoading, MembersFactory, ContactsFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
 
   $scope.user = {'fullname': '','address': '','phone': '','photo': '','picture': ''};
   $scope.item = {'photo': ''};
+  $scope.inEditMode = false;
 
   $scope.$on('$ionicView.beforeEnter', function () {
-    refresh($scope.user, $scope);
+    if ($scope.user.picture === ""){
+       $scope.item.photo = PickTransactionServices.photoSelected;
+    } else {
+      $scope.item = {'photo': $scope.user.picture};
+    }
+    if ($scope.user.gender === "male"){
+      $scope.male = "checked";
+    } 
+    else if ($scope.user.gender === "female"){
+      $scope.female = "checked";
+    }
+    if ($scope.user.title === "admin"){
+      $scope.admin = "checked";
+    } 
+    else if ($scope.user.title === "supervisor"){
+      $scope.finance = "checked";
+    }
+    else if ($scope.user.title === "worker"){
+      $scope.sales = "checked";
+    }
+    else if ($scope.user.title === "owner"){
+      $scope.customer = "checked";
+    }
   });
+
+  if ($stateParams.employeeId === '') {
+      //
+      // Create Material
+      //
+      $scope.item = {'photo': ''};
+  } else {
+      //
+      // Edit Material
+      //
+      var getemployee = ContactsFactory.getEmployee($stateParams.employeeId);
+      $scope.inEditMode = true;
+      $scope.user = getemployee;
+      $scope.item = {'photo': $scope.user.picture};
+      $scope.gender = $scope.user.gender;
+      $scope.title = $scope.user.title;
+      if ($scope.user.gender === "male"){
+        $scope.male = "checked";
+      } 
+      else if ($scope.user.gender === "female"){
+        $scope.female = "checked";
+      }
+      if ($scope.user.title === "admin"){
+        $scope.admin = "checked";
+      } 
+      else if ($scope.user.title === "supervisor"){
+        $scope.finance = "checked";
+      }
+      else if ($scope.user.title === "worker"){
+        $scope.sales = "checked";
+      }
+      else if ($scope.user.title === "owner"){
+        $scope.customer = "checked";
+      }
+  }
 
   // Gender
   $scope.male = "";
@@ -441,6 +524,7 @@ angular.module('starter.controllers', [])
         $scope.item = {
           photo: fileLoadedEvent.target.result
         };
+        PickTransactionServices.updatePhoto($scope.item.photo);
       };
 
       fileReader.readAsDataURL(fileToLoad);
@@ -461,6 +545,7 @@ angular.module('starter.controllers', [])
           $scope.item = {
             photo: fileLoadedEvent.target.result
           };
+          PickTransactionServices.updatePhoto($scope.item.photo);
         };
 
         fileReader.readAsDataURL(fileToLoad);
@@ -487,25 +572,51 @@ angular.module('starter.controllers', [])
           template: '<ion-spinner icon="ios"></ion-spinner><br>Adding...'
       });
 
-      /* PREPARE DATA FOR FIREBASE*/
-      var photo = $scope.item.photo;
-      var gender = $scope.gender;
-      var title = $scope.title;
-      $scope.temp = {
-          fullname: user.fullname,
-          picture: photo,
-          address: user.address,
-          phone: user.phone,
-          gender: gender,
-          title: title,
-          status: "active",
-          datecreated: Date.now(),
-          dateupdated: Date.now()
-      }
+      if ($scope.inEditMode) {
+        /* PREPARE DATA FOR FIREBASE*/
+        var photo = $scope.item.photo;
+        var gender = $scope.gender;
+        var title = $scope.title;
+        $scope.temp = {
+            fullname: user.fullname,
+            picture: photo,
+            address: user.address,
+            phone: user.phone,
+            gender: gender,
+            title: title,
+            status: "active",
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
 
-      /* SAVE MEMBER DATA */
-      var ref = fb.child("employees");
-      ref.push($scope.temp);
+        /* SAVE MEMBER DATA */
+        /* SAVE MATERIAL DATA */
+        var employeeref = ContactsFactory.eRef();
+        var newData = employeeref.child($stateParams.employeeId);
+        newData.update($scope.temp, function (ref) {
+        });
+        $ionicHistory.goBack();
+      }else {
+        /* PREPARE DATA FOR FIREBASE*/
+        var photo = $scope.item.photo;
+        var gender = $scope.gender;
+        var title = $scope.title;
+        $scope.temp = {
+            fullname: user.fullname,
+            picture: photo,
+            address: user.address,
+            phone: user.phone,
+            gender: gender,
+            title: title,
+            status: "active",
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+
+        /* SAVE MEMBER DATA */
+        var ref = fb.child("employees");
+        ref.push($scope.temp);
+      }
 
       $ionicLoading.hide();
       refresh($scope.user, $scope);
@@ -524,6 +635,502 @@ angular.module('starter.controllers', [])
   }
 })
 
+.controller('inventoryCtrl', function($scope, $state, $ionicLoading, MasterFactory, $ionicPopup, myCache) {
+
+  $scope.inventories = [];
+
+  $scope.inventories = MasterFactory.getInventories();
+  $scope.inventories.$loaded().then(function (x) {
+    refresh($scope.inventories, $scope, MasterFactory);
+  }).catch(function (error) {
+      console.error("Error:", error);
+  });
+
+  $scope.$on('$ionicView.beforeEnter', function () {
+    refresh($scope.inventories, $scope);
+  });
+
+  $scope.edit = function(item) {
+    $state.go('app.rawinventory', { inventoryId: item.$id });
+  };
+
+  function refresh(inventories, $scope, item) {
+  }
+})
+
+.controller('addinventoryCtrl', function($scope, $state, $ionicLoading, MasterFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
+
+  $scope.inventory = {'name': '','jumlah': '','harga': '','photo': '','picture': ''};
+  $scope.item = {'photo': ''};
+
+  $scope.$on('$ionicView.beforeEnter', function () {
+    $scope.item.photo = PickTransactionServices.photoSelected;
+  });
+
+  $scope.takepic = function() {
+    
+    var filesSelected = document.getElementById("nameImg").files;
+    if (filesSelected.length > 0) {
+      var fileToLoad = filesSelected[0];
+      var fileReader = new FileReader();
+      fileReader.onload = function(fileLoadedEvent) {
+        var textAreaFileContents = document.getElementById(
+          "textAreaFileContents"
+        );
+        $scope.item = {
+          photo: fileLoadedEvent.target.result
+        };
+        PickTransactionServices.updatePhoto($scope.item.photo);
+      };
+
+      fileReader.readAsDataURL(fileToLoad);
+    }
+  };
+
+  $scope.createInventory = function (inventory) {
+      var filesSelected = document.getElementById("nameImg").files;
+      if (filesSelected.length > 0) {
+        var fileToLoad = filesSelected[0];
+        var fileReader = new FileReader();
+        fileReader.onload = function(fileLoadedEvent) {
+          var textAreaFileContents = document.getElementById(
+            "textAreaFileContents"
+          );
+          $scope.item = {
+            photo: fileLoadedEvent.target.result
+          };
+        };
+
+        fileReader.readAsDataURL(fileToLoad);
+      }
+
+      // Validate form data
+      if (typeof inventory.name === 'undefined' || inventory.name === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter name"
+          return;
+      }
+      if (typeof inventory.jumlah === 'undefined' || inventory.jumlah === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter jumlah"
+          return;
+      }
+      if (typeof inventory.harga === 'undefined' || inventory.harga === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter harga"
+          return;
+      }
+
+      $ionicLoading.show({
+          template: '<ion-spinner icon="ios"></ion-spinner><br>Adding...'
+      });
+
+      /* PREPARE DATA FOR FIREBASE*/
+      var photo = $scope.item.photo;
+      $scope.temp = {
+          name: inventory.name,
+          picture: photo,
+          harga: inventory.harga,
+          stock: inventory.jumlah,
+          addedby: CurrentUserService.fullname,
+          datecreated: Date.now(),
+          dateupdated: Date.now()
+      }
+
+      /* SAVE MEMBER DATA */
+      var ref = fb.child("master").child("inventory");
+      ref.push($scope.temp);
+
+      $ionicLoading.hide();
+      refresh($scope.inventory, $scope);
+  };
+
+  function refresh(inventory, $scope, item) {
+
+    $scope.inventory = {'name': '','berat': '','harga': '','picture': ''};
+    $scope.item = {'photo': ''};
+  }
+})
+
+.controller('rawinventoryCtrl', function($scope, $state, $stateParams, $ionicLoading, $ionicHistory, MasterFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
+
+  $scope.inventory = {'name': '','jumlah': '','harga': '','photo': '','picture': ''};
+  $scope.item = {'photo': ''};
+  $scope.inEditMode = false;
+  var getinventory = MasterFactory.getInventory($stateParams.inventoryId);
+  $scope.stock = getinventory.jumlah;
+
+  if ($stateParams.inventoryId === '') {
+      //
+      // Create Material
+      //
+      $scope.item = {'photo': ''};
+  } else {
+      //
+      // Edit Material
+      //
+      var getinventory = MasterFactory.getInventory($stateParams.inventoryId);
+      $scope.inEditMode = true;
+      $scope.inventory = getinventory;
+      $scope.inventory.jumlah = "";
+      $scope.stock = $scope.inventory.stock;
+      $scope.item = {'photo': $scope.inventory.picture};
+  }
+
+  $scope.myFunc = function() {
+    if($scope.inventory.jumlah !== undefined){
+      $scope.stock = parseFloat($scope.inventory.jumlah) + parseFloat($scope.inventory.stock);
+    } else {
+      $scope.stock = $scope.inventory.stock;
+    }
+    
+  };
+
+  $scope.$on('$ionicView.beforeEnter', function () {
+    $scope.inventory = getinventory;
+    $scope.stock = $scope.inventory.stock;
+    $scope.item = {'photo': $scope.inventory.picture};
+  });
+
+  $scope.takepic = function() {
+    
+    var filesSelected = document.getElementById("nameImg").files;
+    if (filesSelected.length > 0) {
+      var fileToLoad = filesSelected[0];
+      var fileReader = new FileReader();
+      fileReader.onload = function(fileLoadedEvent) {
+        var textAreaFileContents = document.getElementById(
+          "textAreaFileContents"
+        );
+        $scope.item = {
+          photo: fileLoadedEvent.target.result
+        };
+      };
+
+      fileReader.readAsDataURL(fileToLoad);
+    }
+  };
+
+  $scope.createInventory = function () {
+      var filesSelected = document.getElementById("nameImg").files;
+      if (filesSelected.length > 0) {
+        var fileToLoad = filesSelected[0];
+        var fileReader = new FileReader();
+        fileReader.onload = function(fileLoadedEvent) {
+          var textAreaFileContents = document.getElementById(
+            "textAreaFileContents"
+          );
+          $scope.item = {
+            photo: fileLoadedEvent.target.result
+          };
+        };
+
+        fileReader.readAsDataURL(fileToLoad);
+      }
+
+      // Validate form data
+      if (typeof $scope.inventory.name === 'undefined' || $scope.inventory.name === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter name"
+          return;
+      }
+      if (typeof $scope.inventory.jumlah === 'undefined' || $scope.inventory.jumlah === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter jumlah"
+          return;
+      }
+      if (typeof $scope.inventory.harga === 'undefined' || $scope.inventory.harga === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter harga"
+          return;
+      }
+
+      $ionicLoading.show({
+          template: '<ion-spinner icon="ios"></ion-spinner><br>Editing...'
+      });
+
+      /* PREPARE DATA FOR FIREBASE*/
+      var photo = $scope.item.photo;
+      var currentstock = $scope.stock;
+      $scope.temp = {
+          name: $scope.inventory.name,
+          picture: photo,
+          harga: $scope.inventory.harga,
+          stock: currentstock,
+          addedby: CurrentUserService.fullname,
+          datecreated: Date.now(),
+          dateupdated: Date.now()
+      }
+
+      /* SAVE MATERIAL DATA */
+      var inventoryref = MasterFactory.iRef();
+      var newData = inventoryref.child($stateParams.inventoryId);
+      newData.update($scope.temp, function (ref) {
+      });
+
+      $scope.temp = {};
+      $ionicLoading.hide();
+      refresh($scope.inventory, $scope.temp, $scope);
+      $ionicHistory.goBack();
+  };
+
+  function refresh(temp, inventory, $scope, item) {
+
+    $scope.inventory = {'name': '','jumlah': '','harga': '','picture': ''};
+    $scope.item = {'photo': ''};
+    $scope.stock = "";
+    $scope.temp = {};
+  }
+})
+
+.controller('materialCtrl', function($scope, $state, $ionicLoading, MasterFactory, $ionicPopup, myCache) {
+
+  $scope.materials = [];
+
+  $scope.materials = MasterFactory.getMaterials();
+  $scope.materials.$loaded().then(function (x) {
+    refresh($scope.materials, $scope, MasterFactory);
+  }).catch(function (error) {
+      console.error("Error:", error);
+  });
+
+  $scope.$on('$ionicView.beforeEnter', function () {
+    refresh($scope.materials, $scope);
+  });
+
+  $scope.edit = function(item) {
+    $state.go('app.rawmaterial', { materialId: item.$id });
+  };
+
+  function refresh(materials, $scope, item) {
+  }
+})
+
+.controller('addmaterialCtrl', function($scope, $state, $ionicLoading, MasterFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
+
+  $scope.material = {'jenis': '','berat': '','harga': '','photo': '','picture': ''};
+  $scope.item = {'photo': ''};
+
+  $scope.$on('$ionicView.beforeEnter', function () {
+    $scope.item.photo = PickTransactionServices.photoSelected;
+  });
+
+  $scope.takepic = function() {
+    
+    var filesSelected = document.getElementById("nameImg").files;
+    if (filesSelected.length > 0) {
+      var fileToLoad = filesSelected[0];
+      var fileReader = new FileReader();
+      fileReader.onload = function(fileLoadedEvent) {
+        var textAreaFileContents = document.getElementById(
+          "textAreaFileContents"
+        );
+        $scope.item = {
+          photo: fileLoadedEvent.target.result
+        };
+        PickTransactionServices.updatePhoto($scope.item.photo);
+      };
+
+      fileReader.readAsDataURL(fileToLoad);
+    }
+  };
+
+  $scope.createMaterial = function (material) {
+      var filesSelected = document.getElementById("nameImg").files;
+      if (filesSelected.length > 0) {
+        var fileToLoad = filesSelected[0];
+        var fileReader = new FileReader();
+        fileReader.onload = function(fileLoadedEvent) {
+          var textAreaFileContents = document.getElementById(
+            "textAreaFileContents"
+          );
+          $scope.item = {
+            photo: fileLoadedEvent.target.result
+          };
+        };
+
+        fileReader.readAsDataURL(fileToLoad);
+      }
+
+      // Validate form data
+      if (typeof material.jenis === 'undefined' || material.jenis === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter jenis"
+          return;
+      }
+      if (typeof material.berat === 'undefined' || material.berat === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter berat"
+          return;
+      }
+      if (typeof material.harga === 'undefined' || material.harga === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter harga"
+          return;
+      }
+
+      $ionicLoading.show({
+          template: '<ion-spinner icon="ios"></ion-spinner><br>Adding...'
+      });
+
+      /* PREPARE DATA FOR FIREBASE*/
+      var photo = $scope.item.photo;
+      $scope.temp = {
+          jenis: material.jenis,
+          picture: photo,
+          harga: material.harga,
+          stock: material.berat,
+          addedby: CurrentUserService.fullname,
+          datecreated: Date.now(),
+          dateupdated: Date.now()
+      }
+
+      /* SAVE MEMBER DATA */
+      var ref = fb.child("master").child("material");
+      ref.push($scope.temp);
+
+      $ionicLoading.hide();
+      refresh($scope.material, $scope);
+  };
+
+  function refresh(material, $scope, item) {
+
+    $scope.material = {'jenis': '','berat': '','harga': '','picture': ''};
+    $scope.item = {'photo': ''};
+  }
+})
+
+.controller('rawmaterialCtrl', function($scope, $state, $stateParams, $ionicLoading, $ionicHistory, MasterFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
+
+  $scope.material = {'jenis': '','berat': '','harga': '','photo': '','picture': ''};
+  $scope.item = {'photo': ''};
+  $scope.inEditMode = false;
+  var getmaterial = MasterFactory.getMaterial($stateParams.materialId);
+  $scope.stock = getmaterial.berat;
+
+  if ($stateParams.materialId === '') {
+      //
+      // Create Material
+      //
+      $scope.item = {'photo': ''};
+  } else {
+      //
+      // Edit Material
+      //
+      var getmaterial = MasterFactory.getMaterial($stateParams.materialId);
+      $scope.inEditMode = true;
+      $scope.material = getmaterial;
+      $scope.material.berat = "";
+      $scope.stock = $scope.material.stock;
+      $scope.item = {'photo': $scope.material.picture};
+  }
+
+  $scope.myFunc = function() {
+    if($scope.material.berat !== undefined){
+      $scope.stock = parseFloat($scope.material.berat) + parseFloat($scope.material.stock);
+    } else {
+      $scope.stock = $scope.material.stock;
+    }
+    
+  };
+
+  $scope.$on('$ionicView.beforeEnter', function () {
+    $scope.material = getmaterial;
+    $scope.stock = $scope.material.stock;
+    $scope.item = {'photo': $scope.material.picture};
+  });
+
+  $scope.takepic = function() {
+    
+    var filesSelected = document.getElementById("nameImg").files;
+    if (filesSelected.length > 0) {
+      var fileToLoad = filesSelected[0];
+      var fileReader = new FileReader();
+      fileReader.onload = function(fileLoadedEvent) {
+        var textAreaFileContents = document.getElementById(
+          "textAreaFileContents"
+        );
+        $scope.item = {
+          photo: fileLoadedEvent.target.result
+        };
+      };
+
+      fileReader.readAsDataURL(fileToLoad);
+    }
+  };
+
+  $scope.createMaterial = function () {
+      var filesSelected = document.getElementById("nameImg").files;
+      if (filesSelected.length > 0) {
+        var fileToLoad = filesSelected[0];
+        var fileReader = new FileReader();
+        fileReader.onload = function(fileLoadedEvent) {
+          var textAreaFileContents = document.getElementById(
+            "textAreaFileContents"
+          );
+          $scope.item = {
+            photo: fileLoadedEvent.target.result
+          };
+        };
+
+        fileReader.readAsDataURL(fileToLoad);
+      }
+
+      // Validate form data
+      if (typeof $scope.material.jenis === 'undefined' || $scope.material.jenis === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter jenis"
+          return;
+      }
+      if (typeof $scope.material.berat === 'undefined' || $scope.material.berat === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter berat"
+          return;
+      }
+      if (typeof $scope.material.harga === 'undefined' || $scope.material.harga === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter harga"
+          return;
+      }
+
+      $ionicLoading.show({
+          template: '<ion-spinner icon="ios"></ion-spinner><br>Editing...'
+      });
+
+      /* PREPARE DATA FOR FIREBASE*/
+      var photo = $scope.item.photo;
+      var currentstock = $scope.stock;
+      $scope.temp = {
+          jenis: $scope.material.jenis,
+          picture: photo,
+          harga: $scope.material.harga,
+          stock: currentstock,
+          addedby: CurrentUserService.fullname,
+          datecreated: Date.now(),
+          dateupdated: Date.now()
+      }
+
+      /* SAVE MATERIAL DATA */
+      var materialref = MasterFactory.mRef();
+      var newData = materialref.child($stateParams.materialId);
+      newData.update($scope.temp, function (ref) {
+      });
+
+      $scope.temp = {};
+      $ionicLoading.hide();
+      refresh($scope.material, $scope.temp, $scope);
+      $ionicHistory.goBack();
+  };
+
+  function refresh(temp, material, $scope, item) {
+
+    $scope.material = {'jenis': '','berat': '','harga': '','picture': ''};
+    $scope.item = {'photo': ''};
+    $scope.stock = "";
+    $scope.temp = {};
+  }
+})
+
 .controller('contactCtrl', function($scope, $state, $ionicLoading, ContactsFactory, $ionicPopup, myCache) {
 
   $scope.contacts = [];
@@ -536,10 +1143,14 @@ angular.module('starter.controllers', [])
   });
 
   $scope.$on('$ionicView.beforeEnter', function () {
-    refresh($scope.user, $scope);
+    refresh($scope.contacts, $scope);
   });
 
-  function refresh(user, $scope, item) {
+  $scope.edit = function(item) {
+    $state.go('app.employee', { employeeId: item.$id });
+  };
+
+  function refresh(contacts, $scope, item) {
   }
 })
 
