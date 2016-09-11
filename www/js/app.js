@@ -79,6 +79,16 @@ angular.module('starter', ['ionic', 'starter.controllers', 'ionic-datepicker', '
     }
   })
 
+  .state('app.inventoryuses', {
+    url: '/inventoryuses/:inventoryusesId',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/inventoryuses.html',
+        controller: 'inventoryusesCtrl'
+      }
+    }
+  })
+
   .state('app.registration', {
     url: '/registration',
     views: {
