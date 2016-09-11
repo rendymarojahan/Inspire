@@ -217,7 +217,8 @@ angular.module('starter.controllers', [])
 .controller('inventoryusesCtrl', function($scope, $state, $stateParams, $ionicHistory, $ionicLoading, MasterFactory, ContactsFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
 
   $scope.uses = {'number': '','inventory': '','PIC': '','photo': '','picture': ''};
-  $scope.item = {'photo': ''};
+  $scope.selinven = {};
+  $scope.selpic = {};
   $scope.inEditMode = false;
   $scope.inventories = [];
   $scope.contacts = [];
@@ -234,84 +235,32 @@ angular.module('starter.controllers', [])
       console.error("Error:", error);
   });
 
+  $scope.selinven = $scope.inventories;
+  $scope.selpic = $scope.contacts;
+
   $scope.$on('$ionicView.beforeEnter', function () {
-    if ($scope.uses.picture === ""){
-       $scope.item.photo = PickTransactionServices.photoSelected;
-    } else {
-      $scope.item = {'photo': $scope.uses.picture};
-    }
   });
 
-  if ($stateParams.inventoryusesId === '') {
-      //
-      // Create Employee
-      //
-      $scope.item = {'photo': ''};
-  } else {
-      //
-      // Edit Employee
-      //
-      var getemployee = ContactsFactory.getEmployee($stateParams.employeeId);
-      $scope.inEditMode = true;
-      $scope.uses = getemployee;
-      $scope.item = {'photo': $scope.uses.picture};
-  }
-
-  $scope.takepic = function() {
-    
-    var filesSelected = document.getElementById("nameImg").files;
-    if (filesSelected.length > 0) {
-      var fileToLoad = filesSelected[0];
-      var fileReader = new FileReader();
-      fileReader.onload = function(fileLoadedEvent) {
-        var textAreaFileContents = document.getElementById(
-          "textAreaFileContents"
-        );
-        $scope.item = {
-          photo: fileLoadedEvent.target.result
-        };
-        $scope.uses.photo = fileLoadedEvent.target.result;
-        PickTransactionServices.updatePhoto($scope.item.photo);
-      };
-
-      fileReader.readAsDataURL(fileToLoad);
+  $scope.myFunc = function() {
+    if($scope.uses.number !== undefined){
+      if($scope.currentstock > parseFloat($scope.uses.number)){
+        $scope.stock = $scope.currentstock - parseFloat($scope.uses.number);
+      } else {
+        alert("Stock tidak cukup");
+        $scope.uses.number = "";
+        $scope.stock = $scope.currentstock;
+      }
+    } else {
+      $scope.stock = $scope.currentstock;
     }
   };
 
   $scope.createUses = function (uses) {
-      var email = uses.email;
-      var password = uses.password;
-      var filesSelected = document.getElementById("nameImg").files;
-      if (filesSelected.length > 0) {
-        var fileToLoad = filesSelected[0];
-        var fileReader = new FileReader();
-        fileReader.onload = function(fileLoadedEvent) {
-          var textAreaFileContents = document.getElementById(
-            "textAreaFileContents"
-          );
-          $scope.item = {
-            photo: fileLoadedEvent.target.result
-          };
-          PickTransactionServices.updatePhoto($scope.item.photo);
-        };
-
-        fileReader.readAsDataURL(fileToLoad);
-      }
-
+      
       // Validate form data
-      if (typeof uses.fullname === 'undefined' || uses.fullname === '') {
+      if (typeof uses.number === 'undefined' || uses.number === '') {
           $scope.hideValidationMessage = false;
-          $scope.validationMessage = "Please enter your name"
-          return;
-      }
-      if (typeof user.address === 'undefined' || user.address === '') {
-          $scope.hideValidationMessage = false;
-          $scope.validationMessage = "Please enter your address"
-          return;
-      }
-      if (typeof user.phone === 'undefined' || user.phone === '') {
-          $scope.hideValidationMessage = false;
-          $scope.validationMessage = "Please enter your phone"
+          $scope.validationMessage = "Please enter number"
           return;
       }
 
@@ -347,23 +296,34 @@ angular.module('starter.controllers', [])
             template: '<ion-spinner icon="ios"></ion-spinner><br>Adding...'
         });
         /* PREPARE DATA FOR FIREBASE*/
-        var photo = $scope.item.photo;
-        var gender = $scope.gender;
-        var title = $scope.title;
+        var currentstock = $scope.stock;
         $scope.temp = {
-            fullname: uses.fullname,
+            stock: currentstock,
+            addedby: CurrentUserService.fullname,
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+
+        /* SAVE MATERIAL DATA */
+        var inventoryref = MasterFactory.iRef();
+        var newData = inventoryref.child($scope.selinven.id);
+        newData.update($scope.temp, function (ref) {
+        });
+
+        /* PREPARE DATA FOR FIREBASE*/
+        var photo = $scope.selinven.picture;
+        var pic = $scope.selpic.fullname;
+        $scope.temp = {
+            number: uses.number,
             picture: photo,
-            address: uses.address,
-            phone: uses.phone,
-            gender: gender,
-            title: title,
+            pic: pic,
             status: "active",
             datecreated: Date.now(),
             dateupdated: Date.now()
         }
 
         /* SAVE MEMBER DATA */
-        var ref = fb.child("employees");
+        var ref = fb.child("transaction").child("inventoryuses");
         ref.push($scope.temp);
       }
 
@@ -371,10 +331,18 @@ angular.module('starter.controllers', [])
       refresh($scope.uses, $scope);
   };
 
-  function refresh(uses, $scope, item) {
-
+  function refresh(inventories, uses, $scope, item) {
     $scope.uses = {'number': '','inventory': '','PIC': '','photo': '','picture': ''};
-    $scope.item = {'photo': ''};
+    $scope.selinven = $scope.inventories;
+    $scope.selpic = $scope.contacts;
+    
+    var index;
+  //
+    for (index = 0; index < inventories.length; ++index) {
+        //
+        var selinven = inventories[index];
+        $scope.currentstock = parseFloat(selinven.stock);
+    }
   }
 })
 
@@ -1312,7 +1280,6 @@ angular.module('starter.controllers', [])
     } else {
       $scope.stock = $scope.inventory.stock;
     }
-    
   };
 
   $scope.$on('$ionicView.beforeEnter', function () {
