@@ -99,6 +99,36 @@ angular.module('starter', ['ionic', 'starter.controllers', 'ionic-datepicker', '
     }
   })
 
+  .state('app.price', {
+    url: '/price/:priceId',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/price.html',
+        controller: 'priceCtrl'
+      }
+    }
+  })
+
+  .state('app.susut', {
+    url: '/susut/:susutId',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/susut.html',
+        controller: 'susutCtrl'
+      }
+    }
+  })
+
+  .state('app.sankcost', {
+    url: '/sankcost/:sankcostId',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/sankcost.html',
+        controller: 'sankcostCtrl'
+      }
+    }
+  })
+
   .state('app.inventory', {
     url: '/inventory',
     views: {
@@ -155,6 +185,26 @@ angular.module('starter', ['ionic', 'starter.controllers', 'ionic-datepicker', '
       'menuContent': {
         templateUrl: 'templates/addmaterial.html',
         controller: 'addmaterialCtrl'
+      }
+    }
+  })
+
+  .state('app.product', {
+    url: '/product',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/product.html',
+        controller: 'productCtrl'
+      }
+    }
+  })
+
+  .state('app.addproduct', {
+    url: '/addproduct/:productId',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/addproduct.html',
+        controller: 'addproductCtrl'
       }
     }
   })

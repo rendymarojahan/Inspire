@@ -87,9 +87,9 @@
           <ul class="nav side-menu">
             <li ng-click="trighome()" class="{{home}}"><a><i class="fa fa-home"></i> Home <span class="fa fa-chevron-down"></span></a>
               <ul class="nav child_menu" style={{homeshow}}>
-                <li><a menu-close href="#/app/dashboard">Dashboard</a></li>
-                <li><a menu-close href="#/app/dashboard">Dashboard2</a></li>
-                <li><a menu-close href="#/app/dashboard">Dashboard3</a></li>
+                <li><a menu-close href="#/app/dashboard/">Dashboard</a></li>
+                <li><a menu-close href="#/app/dashboard/">Dashboard2</a></li>
+                <li><a menu-close href="#/app/dashboard/">Dashboard3</a></li>
               </ul>
             </li>
             <li ng-click="trigorder()" class="{{order}}"><a><i class="fa fa-edit"></i> Order <span class="fa fa-chevron-down"></span></a>
@@ -127,17 +127,18 @@
                 <li><a menu-close href="#/app/addinventory">Inventory</a></li>
                 <li><a menu-close href="#/app/addmaterial">Raw Material</a></li>
                 <li><a menu-close href="#/app/registration">User</a></li>
-                <li><a href="fixed_footer.html">Product</a></li>
+                <li><a menu-close href="#/app/addproduct/">Product</a></li>
               </ul>
             </li>
             <li ng-click="trigsett()" class="{{sett}}"><a><i class="fa fa-clone"></i>Setting <span class="fa fa-chevron-down"></span></a>
               <ul class="nav child_menu" style={{settshow}}>
-                <li><a href="fixed_sidebar.html">Price</a></li>
-                <li><a href="fixed_footer.html">Jatah Susut</a></li>
+                <li><a menu-close href="#/app/price/">Price</a></li>
+                <li><a menu-close href="#/app/susut/">Jatah Susut</a></li>
                 <li><a menu-close href="#/app/contact">Employee</a></li>
-                <li><a href="fixed_footer.html">Sank Cost</a></li>
+                <li><a menu-close href="#/app/sankcost/">Sank Cost</a></li>
                 <li><a menu-close href="#/app/material">Raw Material</a></li>
                 <li><a menu-close href="#/app/inventory">Inventory</a></li>
+                <li><a menu-close href="#/app/product">Product</a></li>
               </ul>
             </li>
           </ul>

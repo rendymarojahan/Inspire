@@ -63,9 +63,17 @@ angular.module('starter.services', [])
         var ref = {};
         var materialsRef = {};
         var inventoriesRef = {};
+        var productsRef = {};
+        var pricesRef = {};
+        var susutsRef = {};
+        var sanksRef = {};
         var raws = {};
         var mRef = fb.child("master").child("material");
         var iRef = fb.child("master").child("inventory");
+        var pRef = fb.child("master").child("product");
+        var prRef = fb.child("master").child("price");
+        var sRef = fb.child("master").child("susut");
+        var skRef = fb.child("master").child("sank");
         return {
             ref: function () {
                 ref = fb.child("publics").child(thisPublicId).child(thisUserId);
@@ -76,6 +84,18 @@ angular.module('starter.services', [])
             },
             iRef: function () {
                 return iRef;
+            },
+            pRef: function () {
+                return pRef;
+            },
+            prRef: function () {
+                return prRef;
+            },
+            sRef: function () {
+                return sRef;
+            },
+            skRef: function () {
+                return skRef;
             },
             getMaterials: function () {
                 ref = fb.child("master").child("material").orderByChild('jenis');
@@ -91,9 +111,45 @@ angular.module('starter.services', [])
                 inventoriesRef = $firebaseArray(ref);
                 return inventoriesRef;
             },
+            getProducts: function () {
+                ref = fb.child("master").child("product").orderByChild('nama');
+                productsRef = $firebaseArray(ref);
+                return productsRef;
+            },
+            getPrices: function () {
+                ref = fb.child("master").child("price").orderByChild('price');
+                pricesRef = $firebaseArray(ref);
+                return pricesRef;
+            },
+            getSusuts: function () {
+                ref = fb.child("master").child("susut").orderByChild('susut');
+                susutsRef = $firebaseArray(ref);
+                return susutsRef;
+            },
+            getSanks: function () {
+                ref = fb.child("master").child("sank").orderByChild('sank');
+                sanksRef = $firebaseArray(ref);
+                return sanksRef;
+            },
             getInventory: function (inventoryid) {
                 var thisInventory = inventoriesRef.$getRecord(inventoryid);
                 return thisInventory;
+            },
+            getProduct: function (productid) {
+                var thisProduct = productsRef.$getRecord(productid);
+                return thisProduct;
+            },
+            getPrice: function (priceid) {
+                var thisPrice = pricesRef.$getRecord(priceid);
+                return thisPrice;
+            },
+            getSusut: function (susutid) {
+                var thisSusut = susutsRef.$getRecord(susutid);
+                return thisSusut;
+            },
+            getSank: function (sankid) {
+                var thisSank = sanksRef.$getRecord(sankid);
+                return thisSank;
             },
             saveMaterial: function (temp) {
                 materialsRef.$save(temp).then(function (ref) {

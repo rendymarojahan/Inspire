@@ -430,12 +430,12 @@ angular.module('starter.controllers', [])
 
   if ($stateParams.employeeId === '') {
       //
-      // Create Material
+      // Create Employee
       //
       $scope.item = {'photo': ''};
   } else {
       //
-      // Edit Material
+      // Edit Employee
       //
       var getemployee = ContactsFactory.getEmployee($stateParams.employeeId);
       $scope.inEditMode = true;
@@ -524,6 +524,7 @@ angular.module('starter.controllers', [])
         $scope.item = {
           photo: fileLoadedEvent.target.result
         };
+        $scope.user.photo = fileLoadedEvent.target.result;
         PickTransactionServices.updatePhoto($scope.item.photo);
       };
 
@@ -568,11 +569,10 @@ angular.module('starter.controllers', [])
           return;
       }
 
-      $ionicLoading.show({
-          template: '<ion-spinner icon="ios"></ion-spinner><br>Adding...'
-      });
-
       if ($scope.inEditMode) {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Editing...'
+        });
         /* PREPARE DATA FOR FIREBASE*/
         var photo = $scope.item.photo;
         var gender = $scope.gender;
@@ -597,6 +597,9 @@ angular.module('starter.controllers', [])
         });
         $ionicHistory.goBack();
       }else {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Adding...'
+        });
         /* PREPARE DATA FOR FIREBASE*/
         var photo = $scope.item.photo;
         var gender = $scope.gender;
@@ -632,6 +635,368 @@ angular.module('starter.controllers', [])
     $scope.finance = "";
     $scope.sales = "";
     $scope.customer = "";
+  }
+})
+
+.controller('priceCtrl', function($scope, $state, $stateParams, $ionicHistory, $ionicLoading, MembersFactory, MasterFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
+
+  $scope.setting = {'price': ''};
+  $scope.inEditMode = false;
+  $scope.settings = MasterFactory.getPrices();
+  $scope.settings.$loaded().then(function (x) {
+    refresh($scope.settings, $scope, MasterFactory);
+  }).catch(function (error) {
+      console.error("Error:", error);
+  });
+
+  // Complexity
+  $scope.low = "";
+  $scope.mid = "";
+  $scope.high = "";
+  $scope.triglow = function() {
+    $scope.low = "checked";
+    $scope.mid = "";
+    $scope.high = "";
+    $scope.complexity = "low";
+    $scope.prid = "-KRNtH4hGZW-xdFRSX4q";
+    var getprices = MasterFactory.getPrice($scope.prid);
+    $scope.inEditMode = true;
+    $scope.setting.price = getprices.price;
+  };
+  $scope.trigmid = function() {
+    $scope.low = "";
+    $scope.mid = "checked";
+    $scope.high = "";
+    $scope.complexity = "mid";
+    $scope.prid = "-KRNtMcNIFHKj41fuby0";
+    var getprices = MasterFactory.getPrice($scope.prid);
+    $scope.inEditMode = true;
+    $scope.setting.price = getprices.price;
+  };
+  $scope.trighigh = function() {
+    $scope.low = "";
+    $scope.mid = "";
+    $scope.high = "checked";
+    $scope.complexity = "high";
+    $scope.prid = "-KRNtP2OhzdfoJiWPMfX";
+    var getprices = MasterFactory.getPrice($scope.prid);
+    $scope.inEditMode = true;
+    $scope.setting.price = getprices.price;
+  };
+
+  $scope.$on('$ionicView.beforeEnter', function () {
+    if ($scope.setting.complexity === "low"){
+      $scope.low = "checked";
+    } 
+    else if ($scope.setting.complexity === "mid"){
+      $scope.mid = "checked";
+    }
+    else if ($scope.setting.complexity === "high"){
+      $scope.high = "checked";
+    }
+    
+  });
+
+  if ($scope.inEditMode) {
+      var getprices = MasterFactory.getPrice($scope.prid);
+      $scope.inEditMode = true;
+      $scope.setting = getprices;
+  }
+
+  $scope.createPrice = function (setting) {
+
+      // Validate form data
+      if (typeof setting.price === 'undefined' || setting.price === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter price"
+          return;
+      }
+
+      if ($scope.inEditMode) {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Editing...'
+        });
+        /* PREPARE DATA FOR FIREBASE*/
+        var complexity = $scope.complexity;
+        $scope.temp = {
+            price: setting.price,
+            complexity: complexity,
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+        /* SAVE PRICE DATA */
+        var priceref = MasterFactory.prRef();
+        var newData = priceref.child($scope.prid);
+        newData.update($scope.temp, function (ref) {
+        });
+      }else {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Adding...'
+        });
+        /* PREPARE DATA FOR FIREBASE*/
+        var complexity = $scope.complexity;
+        $scope.temp = {
+            price: setting.price,
+            complexity: complexity,
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+
+        /* SAVE MEMBER DATA */
+        var ref = fb.child("master").child("price");
+        ref.push($scope.temp);
+      }
+
+      $ionicLoading.hide();
+      refresh($scope.setting, $scope);
+  };
+
+  function refresh(setting, $scope, item) {
+
+    $scope.setting = {'price': '','complexity': ''};
+    $scope.low = "";
+    $scope.mid = "";
+    $scope.high = "";
+  }
+})
+
+.controller('susutCtrl', function($scope, $state, $stateParams, $ionicHistory, $ionicLoading, MembersFactory, MasterFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
+
+  $scope.setting = {'susut': ''};
+  $scope.inEditMode = false;
+  $scope.settings = MasterFactory.getSusuts();
+  $scope.settings.$loaded().then(function (x) {
+    refresh($scope.settings, $scope, MasterFactory);
+  }).catch(function (error) {
+      console.error("Error:", error);
+  });
+
+  // Complexity
+  $scope.finishing = "";
+  $scope.settingg = "";
+  $scope.polishing = "";
+  $scope.trigfinish = function() {
+    $scope.finishing = "checked";
+    $scope.settingg = "";
+    $scope.polishing = "";
+    $scope.process = "finishing";
+    $scope.prid = "-KROB-59GBJy9LhjtsVl";
+    var getsusuts = MasterFactory.getSusut($scope.prid);
+    $scope.setting.susut = getsusuts.susut;
+    $scope.inEditMode = true;
+  };
+  $scope.trigsetting = function() {
+    $scope.finishing = "";
+    $scope.settingg = "checked";
+    $scope.polishing = "";
+    $scope.process = "setting";
+    $scope.prid = "-KROB09hw2E_UuR8sTiV";
+    var getsusuts = MasterFactory.getSusut($scope.prid);
+    $scope.setting.susut = getsusuts.susut;
+    $scope.inEditMode = true;
+  };
+  $scope.trigpolish = function() {
+    $scope.finishing = "";
+    $scope.settingg = "";
+    $scope.polishing = "checked";
+    $scope.process = "polishing";
+    $scope.prid = "-KROB10fm8kIZizhvfrH";
+    var getsusuts = MasterFactory.getSusut($scope.prid);
+    $scope.setting.susut = getsusuts.susut;
+    $scope.inEditMode = true;
+  };
+
+  $scope.$on('$ionicView.beforeEnter', function () {
+    if ($scope.setting.process === "finishing"){
+      $scope.finishing = "checked";
+    } 
+    else if ($scope.setting.process === "setting"){
+      $scope.settingg = "checked";
+    }
+    else if ($scope.setting.process === "polishing"){
+      $scope.polishing = "checked";
+    }
+    
+  });
+
+  if ($scope.inEditMode) {
+      var getsusuts = MasterFactory.getSusut($scope.prid);
+      $scope.setting.susut = getsusuts.susut;
+      $scope.inEditMode = true;
+  }
+
+  $scope.createSusut = function (setting) {
+
+      // Validate form data
+      if (typeof setting.susut === 'undefined' || setting.susut === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter susut"
+          return;
+      }
+
+      if ($scope.inEditMode) {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Editing...'
+        });
+        /* PREPARE DATA FOR FIREBASE*/
+        $scope.temp = {
+            susut: setting.susut,
+            process: $scope.process,
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+        /* SAVE PRICE DATA */
+        var susutref = MasterFactory.sRef();
+        var newData = susutref.child($scope.prid);
+        newData.update($scope.temp, function (ref) {
+        });
+      }else {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Adding...'
+        });
+        /* PREPARE DATA FOR FIREBASE*/
+        $scope.temp = {
+            susut: setting.susut,
+            process: $scope.process,
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+
+        /* SAVE MEMBER DATA */
+        var ref = fb.child("master").child("susut");
+        ref.push($scope.temp);
+      }
+
+      $ionicLoading.hide();
+      refresh($scope.setting, $scope);
+  };
+
+  function refresh(setting, $scope, item) {
+
+    $scope.setting = {'susut': '','process': ''};
+    $scope.finishing = "";
+    $scope.settingg = "";
+    $scope.polishing = "";
+  }
+})
+
+.controller('sankcostCtrl', function($scope, $state, $stateParams, $ionicHistory, $ionicLoading, MembersFactory, MasterFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
+
+  $scope.setting = {'sank': ''};
+  $scope.inEditMode = false;
+  $scope.settings = MasterFactory.getSanks();
+  $scope.settings.$loaded().then(function (x) {
+    refresh($scope.settings, $scope, MasterFactory);
+  }).catch(function (error) {
+      console.error("Error:", error);
+  });
+
+  // Complexity
+  $scope.casting = "";
+  $scope.transfering = "";
+  $scope.inventoring = "";
+  $scope.trigcasting = function() {
+    $scope.casting = "checked";
+    $scope.transfering = "";
+    $scope.inventoring = "";
+    $scope.process = "casting";
+    $scope.prid = "-KROJAqpfuVHGgHJSoHo";
+    var getsanks = MasterFactory.getSank($scope.prid);
+    $scope.setting.sank = getsanks.sank;
+    $scope.inEditMode = true;
+  };
+  $scope.trigtransfer = function() {
+    $scope.casting = "";
+    $scope.transfering = "checked";
+    $scope.inventoring = "";
+    $scope.process = "transfering";
+    $scope.prid = "-KROJDSnXGhET76giV05";
+    var getsanks = MasterFactory.getSank($scope.prid);
+    $scope.setting.sank = getsanks.sank;
+    $scope.inEditMode = true;
+  };
+  $scope.triginventor = function() {
+    $scope.casting = "";
+    $scope.transfering = "";
+    $scope.inventoring = "checked";
+    $scope.process = "inventoring";
+    $scope.prid = "-KROJEFWXcsUVnsiz_PV";
+    var getsanks = MasterFactory.getSank($scope.prid);
+    $scope.setting.sank = getsanks.sank;
+    $scope.inEditMode = true;
+  };
+
+  $scope.$on('$ionicView.beforeEnter', function () {
+    if ($scope.setting.process === "casting"){
+      $scope.casting = "checked";
+    } 
+    else if ($scope.setting.process === "transfering"){
+      $scope.transfering = "checked";
+    }
+    else if ($scope.setting.process === "inventoring"){
+      $scope.inventoring = "checked";
+    }
+    
+  });
+
+  if ($scope.inEditMode) {
+      var getsanks = MasterFactory.getSank($scope.prid);
+      $scope.setting.sank = getsanks.sank;
+      $scope.inEditMode = true;
+  }
+
+  $scope.createSank = function (setting) {
+
+      // Validate form data
+      if (typeof setting.sank === 'undefined' || setting.sank === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter sank"
+          return;
+      }
+
+      if ($scope.inEditMode) {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Editing...'
+        });
+        /* PREPARE DATA FOR FIREBASE*/
+        $scope.temp = {
+            sank: setting.sank,
+            process: $scope.process,
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+        /* SAVE PRICE DATA */
+        var sankref = MasterFactory.skRef();
+        var newData = sankref.child($scope.prid);
+        newData.update($scope.temp, function (ref) {
+        });
+      }else {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Adding...'
+        });
+        /* PREPARE DATA FOR FIREBASE*/
+        $scope.temp = {
+            sank: setting.sank,
+            process: $scope.process,
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+
+        /* SAVE MEMBER DATA */
+        var ref = fb.child("master").child("sank");
+        ref.push($scope.temp);
+      }
+
+      $ionicLoading.hide();
+      refresh($scope.setting, $scope);
+  };
+
+  function refresh(setting, $scope, item) {
+
+    $scope.setting = {'sank': '','process': ''};
+    $scope.casting = "";
+    $scope.transfering = "";
+    $scope.inventoring = "";
   }
 })
 
@@ -805,6 +1170,7 @@ angular.module('starter.controllers', [])
         $scope.item = {
           photo: fileLoadedEvent.target.result
         };
+        $scope.inventory.photo = fileLoadedEvent.target.result;
       };
 
       fileReader.readAsDataURL(fileToLoad);
@@ -1053,6 +1419,7 @@ angular.module('starter.controllers', [])
         $scope.item = {
           photo: fileLoadedEvent.target.result
         };
+        $scope.material.photo = fileLoadedEvent.target.result;
       };
 
       fileReader.readAsDataURL(fileToLoad);
@@ -1128,6 +1495,165 @@ angular.module('starter.controllers', [])
     $scope.item = {'photo': ''};
     $scope.stock = "";
     $scope.temp = {};
+  }
+})
+
+.controller('productCtrl', function($scope, $state, $ionicLoading, MasterFactory, $ionicPopup, myCache) {
+
+  $scope.products = [];
+
+  $scope.products = MasterFactory.getProducts();
+  $scope.products.$loaded().then(function (x) {
+    refresh($scope.products, $scope, MasterFactory);
+  }).catch(function (error) {
+      console.error("Error:", error);
+  });
+
+  $scope.$on('$ionicView.beforeEnter', function () {
+    refresh($scope.products, $scope);
+  });
+
+  $scope.edit = function(item) {
+    $state.go('app.addproduct', { productId: item.$id });
+  };
+
+  function refresh(products, $scope, item) {
+  }
+})
+
+.controller('addproductCtrl', function($scope, $state, $stateParams, $ionicHistory, $ionicLoading, MasterFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
+
+  $scope.product = {'nama': '','berat': '','harga': '','photo': '','picture': ''};
+  $scope.item = {'photo': ''};
+  $scope.inEditMode = false;
+
+  $scope.$on('$ionicView.beforeEnter', function () {
+    if ($scope.product.picture === ""){
+       $scope.item.photo = PickTransactionServices.photoSelected;
+    } else {
+      $scope.item = {'photo': $scope.product.picture};
+    }
+  });
+
+  if ($stateParams.productId === '') {
+      //
+      // Create Product
+      //
+      $scope.item = {'photo': ''};
+  } else {
+      //
+      // Edit Product
+      //
+      var getproduct = MasterFactory.getProduct($stateParams.productId);
+      $scope.inEditMode = true;
+      $scope.product = getproduct;
+      $scope.item = {'photo': $scope.product.picture};
+  }
+
+  $scope.takepic = function() {
+    
+    var filesSelected = document.getElementById("nameImg").files;
+    if (filesSelected.length > 0) {
+      var fileToLoad = filesSelected[0];
+      var fileReader = new FileReader();
+      fileReader.onload = function(fileLoadedEvent) {
+        var textAreaFileContents = document.getElementById(
+          "textAreaFileContents"
+        );
+        $scope.item = {
+          photo: fileLoadedEvent.target.result
+        };
+        $scope.product.photo = fileLoadedEvent.target.result;
+        PickTransactionServices.updatePhoto($scope.item.photo);
+      };
+
+      fileReader.readAsDataURL(fileToLoad);
+    }
+  };
+
+  $scope.createProduct = function (product) {
+      var filesSelected = document.getElementById("nameImg").files;
+      if (filesSelected.length > 0) {
+        var fileToLoad = filesSelected[0];
+        var fileReader = new FileReader();
+        fileReader.onload = function(fileLoadedEvent) {
+          var textAreaFileContents = document.getElementById(
+            "textAreaFileContents"
+          );
+          $scope.item = {
+            photo: fileLoadedEvent.target.result
+          };
+        };
+
+        fileReader.readAsDataURL(fileToLoad);
+      }
+
+      // Validate form data
+      if (typeof product.nama === 'undefined' || product.nama === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter nama"
+          return;
+      }
+      if (typeof product.berat === 'undefined' || product.berat === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter berat"
+          return;
+      }
+      if (typeof product.harga === 'undefined' || product.harga === '') {
+          $scope.hideValidationMessage = false;
+          $scope.validationMessage = "Please enter harga"
+          return;
+      }
+
+      if ($scope.inEditMode) {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Editing...'
+        });
+        /* PREPARE DATA FOR FIREBASE*/
+        var photo = $scope.item.photo;
+        $scope.temp = {
+            nama: product.nama,
+            picture: photo,
+            harga: product.harga,
+            berat: product.berat,
+            addedby: CurrentUserService.fullname,
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+        /* SAVE PRODUCT DATA */
+        var productref = MasterFactory.pRef();
+        var newData = productref.child($stateParams.productId);
+        newData.update($scope.temp, function (ref) {
+        });
+        $ionicHistory.goBack();
+      }else {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Adding...'
+        });
+        /* PREPARE DATA FOR FIREBASE*/
+        var photo = $scope.item.photo;
+        $scope.temp = {
+            nama: product.nama,
+            picture: photo,
+            harga: product.harga,
+            berat: product.berat,
+            addedby: CurrentUserService.fullname,
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+        /* SAVE PRODUCT DATA */
+        var ref = fb.child("master").child("product");
+        ref.push($scope.temp);
+      }
+
+      $ionicLoading.hide();
+      refresh($scope.product, $scope);
+  };
+
+  function refresh(product, $scope, item) {
+
+    $scope.product = {'nama': '','berat': '','harga': '','picture': ''};
+    $scope.item = {'photo': ''};
   }
 })
 
