@@ -89,6 +89,16 @@ angular.module('starter', ['ionic', 'starter.controllers', 'ionic-datepicker', '
     }
   })
 
+  .state('app.transferbahan', {
+    url: '/transferbahan/:transferbahanId',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/transferbahan.html',
+        controller: 'transferbahanCtrl'
+      }
+    }
+  })
+
   .state('app.registration', {
     url: '/registration',
     views: {

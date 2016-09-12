@@ -67,6 +67,7 @@ angular.module('starter.services', [])
         var pricesRef = {};
         var susutsRef = {};
         var sanksRef = {};
+        var sankcostRef = {};
         var raws = {};
         var mRef = fb.child("master").child("material");
         var iRef = fb.child("master").child("inventory");
@@ -130,6 +131,14 @@ angular.module('starter.services', [])
                 ref = fb.child("master").child("sank").orderByChild('sank');
                 sanksRef = $firebaseArray(ref);
                 return sanksRef;
+            },
+            getSankCost: function () {
+                var deferred = $q.defer();
+                var memberRef = fb.child("master").child("sank").child("-KROJDSnXGhET76giV05");
+                memberRef.once("value", function (snap) {
+                    deferred.resolve(snap.val());
+                });
+                return deferred.promise;
             },
             getInventory: function (inventoryid) {
                 var thisInventory = inventoriesRef.$getRecord(inventoryid);

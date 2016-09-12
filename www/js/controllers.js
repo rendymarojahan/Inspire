@@ -224,43 +224,213 @@ angular.module('starter.controllers', [])
   $scope.contacts = [];
   $scope.inventories = MasterFactory.getInventories();
   $scope.inventories.$loaded().then(function (x) {
+    $scope.selinven = $scope.inventories;
     refresh($scope.inventories, $scope, MasterFactory);
   }).catch(function (error) {
       console.error("Error:", error);
   });
   $scope.contacts = ContactsFactory.getContacts();
   $scope.contacts.$loaded().then(function (x) {
+    $scope.selpic = $scope.contacts;
     refresh($scope.contacts, $scope, ContactsFactory);
   }).catch(function (error) {
       console.error("Error:", error);
   });
 
-  $scope.selinven = $scope.inventories;
-  $scope.selpic = $scope.contacts;
-
   $scope.$on('$ionicView.beforeEnter', function () {
+    $scope.stock = $scope.selinven.stock;
   });
 
   $scope.myFunc = function() {
     if($scope.uses.number !== undefined){
-      if($scope.currentstock > parseFloat($scope.uses.number)){
-        $scope.stock = $scope.currentstock - parseFloat($scope.uses.number);
+      if(parseFloat($scope.selinven.stock) > parseFloat($scope.uses.number)){
+        $scope.stock = parseFloat($scope.selinven.stock) - parseFloat($scope.uses.number);
       } else {
         alert("Stock tidak cukup");
         $scope.uses.number = "";
-        $scope.stock = $scope.currentstock;
+        $scope.stock = parseFloat($scope.selinven.stock);
       }
     } else {
-      $scope.stock = $scope.currentstock;
+      $scope.stock = parseFloat($scope.selinven.stock);
     }
   };
 
-  $scope.createUses = function (uses) {
+  $scope.createUses = function (uses, selinven, selpic) {
       
       // Validate form data
       if (typeof uses.number === 'undefined' || uses.number === '') {
           $scope.hideValidationMessage = false;
           $scope.validationMessage = "Please enter number"
+          return;
+      }
+
+      if ($scope.inEditMode) {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Editing...'
+        });
+        /* PREPARE DATA FOR FIREBASE*/
+        var currentstock = parseFloat(selinven.stock) - parseFloat($scope.uses.number);;
+        $scope.temp = {
+            stock: currentstock,
+            addedby: CurrentUserService.fullname,
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+
+        /* SAVE MATERIAL DATA */
+        var inventoryref = MasterFactory.iRef();
+        var newData = inventoryref.child(selinven.$id);
+        newData.update($scope.temp, function (ref) {
+        });
+
+        /* PREPARE DATA FOR FIREBASE*/
+        var photo = selinven.picture;
+        var pic = selpic.fullname;
+        $scope.temp = {
+            number: uses.number,
+            name: selinven.name,
+            inventoryid: selinven.$id,
+            picture: photo,
+            pic: pic,
+            status: "active",
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+
+        /* SAVE MEMBER DATA */
+        var ref = fb.child("transactions").child("inventoryuses");
+        ref.push($scope.temp);
+        $ionicHistory.goBack();
+      }else {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Adding...'
+        });
+        /* PREPARE DATA FOR FIREBASE*/
+        var currentstock = parseFloat(selinven.stock) - parseFloat($scope.uses.number);
+        $scope.temp = {
+            stock: currentstock,
+            addedby: CurrentUserService.fullname,
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+
+        /* SAVE MATERIAL DATA */
+        var inventoryref = MasterFactory.iRef();
+        var newData = inventoryref.child(selinven.$id);
+        newData.update($scope.temp, function (ref) {
+        });
+
+        /* PREPARE DATA FOR FIREBASE*/
+        var photo = selinven.picture;
+        var pic = selpic.fullname;
+        $scope.temp = {
+            number: uses.number,
+            name: selinven.name,
+            inventoryid: selinven.$id,
+            picture: photo,
+            pic: pic,
+            status: "active",
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+
+        /* SAVE MEMBER DATA */
+        var ref = fb.child("transactions").child("inventoryuses");
+        ref.push($scope.temp);
+      }
+
+      $ionicLoading.hide();
+      refresh($scope.uses, $scope);
+  };
+
+  function refresh(uses, $scope, stock) {
+    $scope.uses = {'number': '','inventory': '','PIC': '','photo': '','picture': ''};
+    $scope.selinven = {'stock': '','name': ''};
+    $scope.selpic = {'fullname': ''};
+  }
+})
+
+.controller('transferbahanCtrl', function($scope, $state, $stateParams, $ionicHistory, $ionicLoading, MasterFactory, ContactsFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
+
+  $scope.transfer = {'jenis': '','beratjadi': '','harga': '','photo': '','picture': ''};
+  $scope.item = {'photo': ''};
+  $scope.selpic = {};
+  $scope.inEditMode = false;
+  $scope.materials = [];
+  $scope.materials = MasterFactory.getMaterials();
+  $scope.materials.$loaded().then(function (x) {
+    refresh($scope.materials, $scope, MasterFactory);
+  }).catch(function (error) {
+      console.error("Error:", error);
+  });
+  $scope.contacts = ContactsFactory.getContacts();
+  $scope.contacts.$loaded().then(function (x) {
+    $scope.selpic = $scope.contacts;
+    refresh($scope.contacts, $scope, ContactsFactory);
+  }).catch(function (error) {
+      console.error("Error:", error);
+  });
+
+  $scope.$on('$ionicView.beforeEnter', function () {
+  });
+
+  $scope.calBerat = function(materials) {
+    var total = 0;
+    var berat = 0;
+    var index;
+    //
+    for (index = 0; index < materials.length; ++index) {
+        //
+        var material = materials[index];
+        //
+        total++;
+        if (material.transfer === true) {
+          if (!isNaN(material.berattransfer)) {
+            berat = berat + parseFloat(material.berattransfer);
+          }
+        }
+    }
+    $scope.beratbahan = berat;
+  };
+
+  $scope.takepic = function() {
+    
+    var filesSelected = document.getElementById("nameImg").files;
+    if (filesSelected.length > 0) {
+      var fileToLoad = filesSelected[0];
+      var fileReader = new FileReader();
+      fileReader.onload = function(fileLoadedEvent) {
+        var textAreaFileContents = document.getElementById(
+          "textAreaFileContents"
+        );
+        $scope.item = {
+          photo: fileLoadedEvent.target.result
+        };
+        $scope.transfer.photo = fileLoadedEvent.target.result;
+        PickTransactionServices.updatePhoto($scope.item.photo);
+      };
+
+      fileReader.readAsDataURL(fileToLoad);
+    }
+  };
+
+  $scope.createTransfer = function (transfer, materials, selpic) {
+      
+      // Validate form data
+      if (typeof transfer.jenis === 'undefined' || transfer.jenis === '') {
+          alert("Jenis Belum Diisi");
+          return;
+      }
+      if (typeof transfer.beratjadi === 'undefined' || transfer.beratjadi === '') {
+          alert("Berat Jadi Belum Diisi");
+          return;
+      }
+      if (typeof transfer.harga === 'undefined' || transfer.harga === '') {
+          alert("Harga Belum Diisi");
+          return;
+      }
+      if (typeof selpic.fullname === 'undefined' || selpic.fullname === '') {
+          alert("PIC belum dipilih");
           return;
       }
 
@@ -296,53 +466,60 @@ angular.module('starter.controllers', [])
             template: '<ion-spinner icon="ios"></ion-spinner><br>Adding...'
         });
         /* PREPARE DATA FOR FIREBASE*/
-        var currentstock = $scope.stock;
+        var index;
+        //
+        for (index = 0; index < materials.length; ++index) {
+            //
+            var material = materials[index];
+            //
+            if (material.transfer === true) {
+              if (!isNaN(material.berattransfer)) {
+                var currentstock = parseFloat(material.stock) - parseFloat(material.berattransfer);
+                $scope.temp = {
+                    stock: currentstock,
+                    addedby: CurrentUserService.fullname,
+                    dateupdated: Date.now()
+                }
+                /* SAVE MATERIAL DATA */
+                var materialref = MasterFactory.mRef();
+                var newData = materialref.child(material.$id);
+                newData.update($scope.temp, function (ref) {
+                });
+              }
+            }
+        }
+        
+
+        /* PREPARE DATA FOR FIREBASE*/
+        var sank = parseFloat($scope.beratbahan) - parseFloat(transfer.beratjadi);
+        var photo = $scope.item.photo;
+        var pic = selpic.fullname;
         $scope.temp = {
-            stock: currentstock,
+            jenis: transfer.jenis,
+            stock: transfer.beratjadi,
+            harga: transfer.harga,
+            transfer: false,
+            berattransfer: "",
+            picture: photo,
+            pic: pic,
+            sank: sank.toFixed(2),
             addedby: CurrentUserService.fullname,
             datecreated: Date.now(),
             dateupdated: Date.now()
         }
 
-        /* SAVE MATERIAL DATA */
-        var inventoryref = MasterFactory.iRef();
-        var newData = inventoryref.child($scope.selinven.id);
-        newData.update($scope.temp, function (ref) {
-        });
-
-        /* PREPARE DATA FOR FIREBASE*/
-        var photo = $scope.selinven.picture;
-        var pic = $scope.selpic.fullname;
-        $scope.temp = {
-            number: uses.number,
-            picture: photo,
-            pic: pic,
-            status: "active",
-            datecreated: Date.now(),
-            dateupdated: Date.now()
-        }
-
         /* SAVE MEMBER DATA */
-        var ref = fb.child("transaction").child("inventoryuses");
+        var ref = fb.child("master").child("material");
         ref.push($scope.temp);
       }
 
       $ionicLoading.hide();
-      refresh($scope.uses, $scope);
+      refresh($scope.transfer, $scope.item, $scope);
   };
 
-  function refresh(inventories, uses, $scope, item) {
-    $scope.uses = {'number': '','inventory': '','PIC': '','photo': '','picture': ''};
-    $scope.selinven = $scope.inventories;
-    $scope.selpic = $scope.contacts;
-    
-    var index;
-  //
-    for (index = 0; index < inventories.length; ++index) {
-        //
-        var selinven = inventories[index];
-        $scope.currentstock = parseFloat(selinven.stock);
-    }
+  function refresh(materials, transfer, $scope, item) {
+    $scope.transfer = {'jenis': '','beratjadi': '','harga': '','photo': '','picture': ''};
+    $scope.item = {'photo': ''};
   }
 })
 
@@ -1477,6 +1654,8 @@ angular.module('starter.controllers', [])
           picture: photo,
           harga: material.harga,
           stock: material.berat,
+          transfer: false,
+          berattransfer: "",
           addedby: CurrentUserService.fullname,
           datecreated: Date.now(),
           dateupdated: Date.now()
