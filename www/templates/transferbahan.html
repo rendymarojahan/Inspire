@@ -35,21 +35,26 @@
                 <div class="profile_img">
                   <div id="crop-avatar">
                     <!-- Current avatar -->
-                    <img ng-show="item.photo !== undefined" class="img-responsive avatar-view" src="{{ item.photo }}">
+                    <img ng-show="selmat.picture !== undefined" class="img-responsive avatar-view" src="{{ selmat.picture }}">
                   </div>
                 </div>
                 <br>
                 
                 <!-- start form for validation -->
                 <form >
-                  <label>Jenis * :</label>
-                  <input type="text" class="form-control" ng-model="transfer.jenis" required /><br>
+                  <div class="form-group">
+                    <label>Transfer to * :</label>
+                    <div>
+                      <select class="select2_single form-control" tabindex="-1" ng-model="selmat" ng-options="material.jenis for material in materials | orderBy:'jenis'">
+                      </select>
+                    </div>
+                  </div>
 
                   <label for="berat">Berat Jadi * :</label>
                   <input type="text" class="form-control" ng-model="transfer.beratjadi" required/><br>
 
                   <label for="berat">Harga * :</label>
-                  <input type="text" class="form-control" ng-model="transfer.harga" required/><br>
+                  <input type="text" class="form-control" ng-model="hargabahan" required disabled/><br>
 
                   <div class="form-group">
                     <label>PIC * :</label>
@@ -58,9 +63,6 @@
                       </select>
                     </div>
                   </div>
-
-                  <label for="picture">Picture * :</label>
-                  <input ng-click="takepic()" type="file" id="nameImg" ng-model="transfer.picture" required><br>
 
                   <label for="berat">Jumlah Berat Transfer * :</label>
                   <input type="text" class="form-control" ng-model="beratbahan" required disabled/><br>
@@ -74,7 +76,7 @@
                   </div>
                     
                     <br>
-                    <span class="btn btn-primary" ng-click="createTransfer(transfer, materials, selpic)">Submit</span>
+                    <span class="btn btn-primary" ng-click="createTransfer(transfer, materials, selpic, selmat)">Submit</span>
 
                 </form>
                 <!-- end form for validations -->

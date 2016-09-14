@@ -145,9 +145,27 @@ angular.module('starter.controllers', [])
   ];
 })
 
-.controller('orderCtrl', function($scope, ionicDatePicker, PickTransactionServices) {
+.controller('orderCtrl', function($scope, ionicDatePicker, $state, $stateParams, $ionicHistory, $ionicLoading, MasterFactory, ContactsFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
+  
+  $scope.pesanan = {'kode': '','pelanggan': '','berat': '','berlian': '','express': ''};
   $scope.OrderDate = '';
   $scope.DeadlineDate = '';
+  $scope.products = [];
+  $scope.materials = [];
+  $scope.materials = MasterFactory.getMaterials();
+  $scope.materials.$loaded().then(function (x) {
+    $scope.selmat = $scope.materials;
+    refresh($scope.materials, $scope, MasterFactory);
+  }).catch(function (error) {
+      console.error("Error:", error);
+  });
+  $scope.products = MasterFactory.getProducts();
+  $scope.products.$loaded().then(function (x) {
+    $scope.selpro = $scope.products;
+    refresh($scope.products, $scope, MasterFactory);
+  }).catch(function (error) {
+      console.error("Error:", error);
+  });
   var tanggal = {
     callback: function (val) {  //Mandatory
       $scope.OrderDate = new Date(val);
@@ -207,11 +225,146 @@ angular.module('starter.controllers', [])
   $scope.trignew = function() {
     $scope.new = "btn-primary";
     $scope.repair = "btn-default";
+    $scope.process = "3D";
   };
   $scope.trigrepair = function() {
     $scope.new = "btn-default";
     $scope.repair = "btn-primary";
+    $scope.process = "Finishing";
   };
+
+  $scope.cancelOrder = function(pesanan, selpro, selmat) {
+    $scope.pesanan = {};
+    $scope.selmat = {};
+    $scope.selpro = {};
+    $scope.new = "btn-default";
+    $scope.repair = "btn-default";
+    $scope.OrderDate = '';
+    $scope.DeadlineDate = '';
+  };
+
+  $scope.createOrder = function (pesanan, selpro, selmat) {
+      
+      // Validate form data
+      if (typeof pesanan.kode === 'undefined' || pesanan.kode === '') {
+          alert("Kode Order Belum diisi");
+          return;
+      }
+      if (typeof pesanan.pelanggan === 'undefined' || pesanan.pelanggan === '') {
+          alert("Nama Pelanggan Belum diisi");
+          return;
+      }
+      if (typeof pesanan.berat === 'undefined' || pesanan.berat === '') {
+          alert("Target Berat Belum diisi");
+          return;
+      }
+      if (typeof pesanan.berlian === 'undefined' || pesanan.berlian === '') {
+          alert("Jumlah Berlian belum diisi");
+          return;
+      }
+      if (typeof pesanan.express === 'undefined' || pesanan.express === '') {
+          pesanan.express = false;
+          return;
+      }
+      if (typeof selpro.nama === 'undefined' || selpro.nama === '') {
+          alert("Product belum dipilih");
+          return;
+      }
+      if (typeof selmat.jenis === 'undefined' || selmat.jenis === '') {
+          alert("Tipe Material belum dipilih");
+          return;
+      }
+      if ($scope.process === 'undefined' || $scope.process === '') {
+          alert("Pilih New atau Repair");
+          return;
+      }
+      if ($scope.OrderDate === 'undefined' || $scope.OrderDate === '') {
+          alert("Tanggal pesanan belum dipilih");
+          return;
+      }
+      if ($scope.DeadlineDate === 'undefined' || $scope.DeadlineDate === '') {
+          alert("Tanggal Deadline belum dipilih");
+          return;
+      }
+
+      if ($scope.inEditMode) {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Editing...'
+        });
+        /* PREPARE DATA FOR FIREBASE*/
+        var photo = $scope.item.photo;
+        var gender = $scope.gender;
+        var title = $scope.title;
+        $scope.temp = {
+            fullname: uses.fullname,
+            picture: photo,
+            address: uses.address,
+            phone: uses.phone,
+            gender: gender,
+            title: title,
+            status: "active",
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+
+        /* SAVE MEMBER DATA */
+        /* SAVE MATERIAL DATA */
+        var employeeref = ContactsFactory.eRef();
+        var newData = employeeref.child($stateParams.employeeId);
+        newData.update($scope.temp, function (ref) {
+        });
+        $ionicHistory.goBack();
+      }else {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Adding...'
+        });
+        /* PREPARE DATA FOR FIREBASE*/
+        var photo = selpro.picture;
+        var product = selpro.nama;
+        var material = selmat.jenis;
+        $scope.temp = {
+            kode: pesanan.kode,
+            pelanggan: pesanan.pelanggan,
+            berat: pesanan.berat,
+            berlian: pesanan.berlian,
+            express: pesanan.express,
+            process: $scope.process,
+            tanggalorder: $scope.OrderDate.getTime(),
+            tanggaldeadline: $scope.DeadlineDate.getTime(),
+            picture: photo,
+            product: product,
+            material: material,
+            addedby: CurrentUserService.fullname,
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+
+        /* SAVE MEMBER DATA */
+        var ref = fb.child("transactions").child("orders");
+        ref.push($scope.temp);
+      }
+
+      $ionicLoading.hide();
+      $scope.pesanan = {};
+      $scope.selmat = {};
+      $scope.selpro = {};
+      $scope.new = "btn-default";
+      $scope.repair = "btn-default";
+      $scope.OrderDate = '';
+      $scope.DeadlineDate = '';
+      refresh($scope.pesanan, $scope.selmat, $scope.selpro, $scope.item, $scope);
+  };
+
+  function refresh(pesanan, $scope, item) {
+    $scope.pesanan = {};
+    $scope.selmat = {'jenis': 'not in list'};
+    $scope.selpro = {'fullname': 'not in list'};
+    $scope.new = "btn-default";
+    $scope.repair = "btn-default";
+    $scope.item = {'photo': ''};
+    $scope.OrderDate = '';
+    $scope.DeadlineDate = '';
+  }
 })
 
 .controller('inventoryusesCtrl', function($scope, $state, $stateParams, $ionicHistory, $ionicLoading, MasterFactory, ContactsFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
@@ -352,13 +505,14 @@ angular.module('starter.controllers', [])
 
 .controller('transferbahanCtrl', function($scope, $state, $stateParams, $ionicHistory, $ionicLoading, MasterFactory, ContactsFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
 
-  $scope.transfer = {'jenis': '','beratjadi': '','harga': '','photo': '','picture': ''};
+  $scope.transfer = {'beratjadi': ''};
   $scope.item = {'photo': ''};
   $scope.selpic = {};
   $scope.inEditMode = false;
   $scope.materials = [];
   $scope.materials = MasterFactory.getMaterials();
   $scope.materials.$loaded().then(function (x) {
+    $scope.selmat = $scope.materials;
     refresh($scope.materials, $scope, MasterFactory);
   }).catch(function (error) {
       console.error("Error:", error);
@@ -377,6 +531,8 @@ angular.module('starter.controllers', [])
   $scope.calBerat = function(materials) {
     var total = 0;
     var berat = 0;
+    var harga = 0;
+    var nilai = 0;
     var index;
     //
     for (index = 0; index < materials.length; ++index) {
@@ -387,10 +543,13 @@ angular.module('starter.controllers', [])
         if (material.transfer === true) {
           if (!isNaN(material.berattransfer)) {
             berat = berat + parseFloat(material.berattransfer);
+            nilai = parseFloat(material.berattransfer) * parseFloat(material.harga);
+            harga = harga + nilai;
           }
         }
     }
     $scope.beratbahan = berat;
+    $scope.hargabahan = harga;
   };
 
   $scope.takepic = function() {
@@ -414,18 +573,18 @@ angular.module('starter.controllers', [])
     }
   };
 
-  $scope.createTransfer = function (transfer, materials, selpic) {
+  $scope.createTransfer = function (transfer, materials, selpic, selmat) {
       
       // Validate form data
-      if (typeof transfer.jenis === 'undefined' || transfer.jenis === '') {
-          alert("Jenis Belum Diisi");
+      if (typeof selmat.jenis === 'undefined' || selmat.jenis === '') {
+          alert("Transfer to Belum pilih");
           return;
       }
       if (typeof transfer.beratjadi === 'undefined' || transfer.beratjadi === '') {
           alert("Berat Jadi Belum Diisi");
           return;
       }
-      if (typeof transfer.harga === 'undefined' || transfer.harga === '') {
+      if (typeof selmat.harga === 'undefined' || selmat.harga === '') {
           alert("Harga Belum Diisi");
           return;
       }
@@ -439,25 +598,52 @@ angular.module('starter.controllers', [])
             template: '<ion-spinner icon="ios"></ion-spinner><br>Editing...'
         });
         /* PREPARE DATA FOR FIREBASE*/
-        var photo = $scope.item.photo;
-        var gender = $scope.gender;
-        var title = $scope.title;
+        var index;
+        //
+        for (index = 0; index < materials.length; ++index) {
+            //
+            var material = materials[index];
+            //
+            if (material.transfer === true) {
+              if (!isNaN(material.berattransfer)) {
+                var currentstock = parseFloat(material.stock) - parseFloat(material.berattransfer);
+                $scope.temp = {
+                    stock: currentstock,
+                    addedby: CurrentUserService.fullname,
+                    dateupdated: Date.now()
+                }
+                /* SAVE MATERIAL DATA */
+                var materialref = MasterFactory.mRef();
+                var newData = materialref.child(material.$id);
+                newData.update($scope.temp, function (ref) {
+                });
+              }
+            }
+        }
+        
+
+        /* PREPARE DATA FOR FIREBASE*/
+        var sank = parseFloat($scope.beratbahan) - parseFloat(transfer.beratjadi);
+        var sankcost = sank * parseFloat($scope.hargabahan);
+        var photo = selmat.picture;
+        var pic = selpic.fullname;
         $scope.temp = {
-            fullname: uses.fullname,
+            stock: transfer.beratjadi,
+            harga: $scope.hargabahan,
+            transfer: false,
+            berattransfer: "",
             picture: photo,
-            address: uses.address,
-            phone: uses.phone,
-            gender: gender,
-            title: title,
-            status: "active",
+            pic: pic,
+            sank: sank.toFixed(2),
+            sankcost: sankcost.toFixed(0),
+            addedby: CurrentUserService.fullname,
             datecreated: Date.now(),
             dateupdated: Date.now()
         }
 
         /* SAVE MEMBER DATA */
-        /* SAVE MATERIAL DATA */
-        var employeeref = ContactsFactory.eRef();
-        var newData = employeeref.child($stateParams.employeeId);
+        var materialref = MasterFactory.mRef();
+        var newData = materialref.child(selmat.$id);
         newData.update($scope.temp, function (ref) {
         });
         $ionicHistory.goBack();
@@ -492,33 +678,40 @@ angular.module('starter.controllers', [])
 
         /* PREPARE DATA FOR FIREBASE*/
         var sank = parseFloat($scope.beratbahan) - parseFloat(transfer.beratjadi);
-        var photo = $scope.item.photo;
+        var sankcost = sank * parseFloat($scope.hargabahan);
+        var photo = selmat.picture;
         var pic = selpic.fullname;
         $scope.temp = {
-            jenis: transfer.jenis,
             stock: transfer.beratjadi,
-            harga: transfer.harga,
+            harga: $scope.hargabahan,
             transfer: false,
             berattransfer: "",
             picture: photo,
             pic: pic,
             sank: sank.toFixed(2),
+            sankcost: sankcost.toFixed(0),
             addedby: CurrentUserService.fullname,
             datecreated: Date.now(),
             dateupdated: Date.now()
         }
 
         /* SAVE MEMBER DATA */
-        var ref = fb.child("master").child("material");
-        ref.push($scope.temp);
+        var materialref = MasterFactory.mRef();
+        var newData = materialref.child(selmat.$id);
+        newData.update($scope.temp, function (ref) {
+        });
       }
 
       $ionicLoading.hide();
-      refresh($scope.transfer, $scope.item, $scope);
+      refresh($scope.transfer, $scope);
   };
 
-  function refresh(materials, transfer, $scope, item) {
-    $scope.transfer = {'jenis': '','beratjadi': '','harga': '','photo': '','picture': ''};
+  function refresh(transfer, $scope, item) {
+    $scope.transfer = {'beratjadi': ''};
+    $scope.selmat = {'jenis': 'not in list'};
+    $scope.selpic = {'fullname': 'not in list'};
+    $scope.beratbahan = "";
+    $scope.hargabahan = "";
     $scope.item = {'photo': ''};
   }
 })

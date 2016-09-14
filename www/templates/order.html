@@ -32,16 +32,22 @@
                 <div class="clearfix"></div>
               </div>
               <div class="x_content">
+                <div class="profile_img">
+                  <div id="crop-avatar">
+                    <!-- Current avatar -->
+                    <img ng-show="selpro.picture !== undefined" class="img-responsive avatar-view" src="{{ selpro.picture }}">
+                  </div>
+                </div>
                 <br />
                 <form class="form-horizontal form-label-left input_mask">
 
                   <div class="col-md-6 col-sm-6 col-xs-12 form-group has-feedback">
-                    <input type="text" class="form-control has-feedback-left" id="inputSuccess2" placeholder="Kode Order">
+                    <input type="text" class="form-control has-feedback-left" id="inputSuccess2" placeholder="Kode Order" ng-model="pesanan.kode">
                     <span class="fa fa-bookmark form-control-feedback left" aria-hidden="true"></span>
                   </div>
 
                   <div class="col-md-6 col-sm-6 col-xs-12 form-group has-feedback">
-                    <input type="text" class="form-control" id="inputSuccess3" placeholder="Nama Pelanggan">
+                    <input type="text" class="form-control" id="inputSuccess3" placeholder="Nama Pelanggan" ng-model="pesanan.pelanggan">
                     <span class="fa fa-user form-control-feedback right" aria-hidden="true"></span>
                   </div>
 
@@ -71,25 +77,27 @@
                   <div class="form-group">
                     <label class="control-label col-md-3 col-sm-3 col-xs-12">Kode Product</label>
                     <div class="col-md-9 col-sm-9 col-xs-12">
-                      <input type="text" class="form-control" placeholder="Kode Product">
+                      <select class="select2_single form-control" tabindex="-1" ng-model="selpro" ng-options="product.nama for product in products | orderBy:'nama'">
+                      </select>
                     </div>
                   </div>
                   <div class="form-group">
                     <label class="control-label col-md-3 col-sm-3 col-xs-12">Target Berat</label>
                     <div class="col-md-9 col-sm-9 col-xs-12">
-                      <input type="text" class="form-control" placeholder="Target Berat">
+                      <input type="text" class="form-control" placeholder="Target Berat" ng-model="pesanan.berat">
                     </div>
                   </div>
                   <div class="form-group">
                     <label class="control-label col-md-3 col-sm-3 col-xs-12">Jumlah Berlian</label>
                     <div class="col-md-9 col-sm-9 col-xs-12">
-                      <input type="text" class="form-control" placeholder="Jumlah Berlian">
+                      <input type="text" class="form-control" placeholder="Jumlah Berlian" ng-model="pesanan.berlian">
                     </div>
                   </div>
                   <div class="form-group">
                     <label class="control-label col-md-3 col-sm-3 col-xs-12">Tipe Material</label>
                     <div class="col-md-9 col-sm-9 col-xs-12">
-                      <input type="text" class="form-control" placeholder="Tipe Material">
+                      <select class="select2_single form-control" tabindex="-1" ng-model="selmat" ng-options="material.jenis for material in materials | orderBy:'jenis'">
+                      </select>
                     </div>
                   </div>
                   <div class="form-group">
@@ -99,7 +107,7 @@
                     <div class="col-md-9 col-sm-9 col-xs-12">
                       <div class="checkbox">
                         <label>
-                          <input type="checkbox" class="flat" >
+                          <input type="checkbox" class="flat" ng-model="pesanan.express">
                         </label>
                       </div>
                     </div>
@@ -107,8 +115,8 @@
                   <div class="ln_solid"></div>
                   <div class="form-group">
                     <div class="col-md-9 col-sm-9 col-xs-12 col-md-offset-3">
-                      <button type="submit" class="btn btn-primary">Cancel</button>
-                      <button type="submit" class="btn btn-success">Submit</button>
+                      <button type="submit" class="btn btn-primary" ng-click="cancelOrder(pesanan, selpro, selmat)">Cancel</button>
+                      <button type="submit" class="btn btn-success" ng-click="createOrder(pesanan, selpro, selmat)">Submit</button>
                     </div>
                   </div>
 
