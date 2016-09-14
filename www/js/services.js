@@ -59,6 +59,37 @@ angular.module('starter.services', [])
         };
 })
 
+.factory('TransactionFactory', function ($firebaseArray, $q, myCache, CurrentUserService) {
+        var ref = {};
+        var transactionsRef = {};
+        var tRef = fb.child("transactions").child("orders");
+        return {
+            ref: function () {
+                ref = fb.child("publics").child(thisPublicId).child(thisUserId);
+                return ref;
+            },
+            tRef: function () {
+                return mRef;
+            },
+            getTransactions: function () {
+                ref = fb.child("transactions").child("orders").orderByChild('kode');
+                transactionsRef = $firebaseArray(ref);
+                return transactionsRef;
+            },
+            getTransaction: function (transactionid) {
+                var thisMaterial = transactionsRef.$getRecord(transactionid);
+                return thisMaterial;
+            },
+            saveTransaction: function (temp) {
+                transactionsRef.$save(temp).then(function (ref) {
+                    //ref.key() = posting.$id;
+                });
+            }
+            
+            
+        };
+})
+
 .factory('MasterFactory', function ($firebaseArray, $q, myCache, CurrentUserService) {
         var ref = {};
         var materialsRef = {};

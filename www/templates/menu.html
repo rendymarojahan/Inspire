@@ -34,18 +34,18 @@
               <li ng-click="trigmessage()" role="presentation" class="dropdown {{message}}">
                 <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="false">
                   <i class="fa fa-envelope-o"></i>
-                  <span class="badge bg-green">6</span>
+                  <span class="badge bg-green">{{notify}}</span>
                 </a>
                 <ul id="menu1" class="dropdown-menu list-unstyled msg_list" role="menu">
-                  <li>
+                  <li ng-if="transaction.newly" ng-repeat="transaction in transactions | orderBy:'kode'">
                     <a>
-                      <span class="image"><img src="{{ photo }}" alt="Profile Image" /></span>
+                      <span class="image"><img src="{{ transaction.picture }}" alt="Product Image" /></span>
                       <span>
-                        <span>{{fullname}}</span>
-                        <span class="time">3 mins ago</span>
+                        <span>{{transaction.pelanggan}}</span>
+                        <span class="time">{{ transaction.datecreated | amCalendar:referenceTime:formats }}</span>
                       </span>
                       <span class="message">
-                        Film festivals used to be do-or-die moments for movie makers. They were where...
+                        {{transaction.product}}
                       </span>
                     </a>
                   </li>

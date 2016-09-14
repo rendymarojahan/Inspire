@@ -1,6 +1,6 @@
 angular.module('starter.controllers', [])
 
-.controller('AppCtrl', function($scope, $ionicModal, $timeout, CurrentUserService) {
+.controller('AppCtrl', function($scope, $ionicModal, $timeout, CurrentUserService, TransactionFactory) {
 
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
@@ -40,6 +40,7 @@ angular.module('starter.controllers', [])
     } else if ($scope.message === "open") {
         $scope.message = "";
     }
+    refresh($scope.transactions, $scope, TransactionFactory);
   };
 
   $scope.profile = "";
@@ -122,6 +123,14 @@ angular.module('starter.controllers', [])
     }
   };
 
+  $scope.transactions = [];
+  $scope.transactions = TransactionFactory.getTransactions();
+  $scope.transactions.$loaded().then(function (x) {
+    refresh($scope.transactions, $scope, TransactionFactory);
+  }).catch(function (error) {
+      console.error("Error:", error);
+  });
+
   // Perform the login action when the user submits the login form
   $scope.doLogin = function() {
     console.log('Doing login', $scope.loginData);
@@ -132,6 +141,21 @@ angular.module('starter.controllers', [])
       $scope.closeLogin();
     }, 1000);
   };
+
+  function refresh(transactions, $scope, item) {
+    var notif = 0;
+    var index;
+    //
+    for (index = 0; index < transactions.length; ++index) {
+        //
+        var transaction = transactions[index];
+        //
+        if (transaction.newly === true) {
+            notif = notif + 1;
+        }
+    }
+    $scope.notify = notif;
+  }
 })
 
 .controller('dashboardCtrl', function($scope) {
@@ -334,6 +358,7 @@ angular.module('starter.controllers', [])
             picture: photo,
             product: product,
             material: material,
+            newly: true,
             addedby: CurrentUserService.fullname,
             datecreated: Date.now(),
             dateupdated: Date.now()
