@@ -59,9 +59,10 @@ angular.module('starter.services', [])
         };
 })
 
-.factory('TransactionFactory', function ($firebaseArray, $q, myCache, CurrentUserService) {
+.factory('TransactionFactory', function ($firebaseArray, $q, myCache, CurrentUserService, $timeout) {
         var ref = {};
         var transactionsRef = {};
+        var ordersRef = {};
         var tRef = fb.child("transactions").child("orders");
         return {
             ref: function () {
@@ -69,12 +70,23 @@ angular.module('starter.services', [])
                 return ref;
             },
             tRef: function () {
-                return mRef;
+                return tRef;
             },
             getTransactions: function () {
                 ref = fb.child("transactions").child("orders").orderByChild('kode');
                 transactionsRef = $firebaseArray(ref);
                 return transactionsRef;
+            },
+            getOrders: function () {
+                ref = fb.child("transactions").child("orders");
+                ordersRef = $firebaseArray(ref);
+                return ordersRef;
+            },
+
+            getDimension: function (thisProcess) {
+                ref = fb.child("transactions").child("orders").orderByChild("process").equalTo(thisProcess);
+                ordersRef = $firebaseArray(ref);
+                return ordersRef;
             },
             getTransaction: function (transactionid) {
                 var thisMaterial = transactionsRef.$getRecord(transactionid);

@@ -392,6 +392,663 @@ angular.module('starter.controllers', [])
   }
 })
 
+.controller('dimensionCtrl', function($scope, ionicDatePicker, $state, $stateParams, $ionicHistory, $ionicLoading, MasterFactory, TransactionFactory, ContactsFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
+  
+  $scope.pesanan = {'kode': '','pelanggan': '','berat': '','berlian': '','express': ''};
+  $scope.OrderDate = '';
+  $scope.DeadlineDate = '';
+  $scope.contacts = ContactsFactory.getContacts();
+  $scope.contacts.$loaded().then(function (x) {
+    $scope.selpic = $scope.contacts;
+    refresh($scope.contacts, $scope, ContactsFactory);
+  }).catch(function (error) {
+      console.error("Error:", error);
+  });
+  $scope.processCode = "3D";
+  $scope.transactions = [];
+  $scope.transactions = TransactionFactory.getDimension($scope.processCode);
+  $scope.transactions.$loaded().then(function (x) {
+    $scope.selor = $scope.transactions;
+    refresh($scope.transactions, $scope, TransactionFactory);
+  }).catch(function (error) {
+      console.error("Error:", error);
+  });
+  var tanggal = {
+    callback: function (val) {  //Mandatory
+      $scope.OrderDate = new Date(val);
+      PickTransactionServices.updateDate(val);
+      console.log('Return value from the datepicker popup is : ' + val, new Date(val));
+    },
+    disabledDates: [            //Optional
+      new Date(2016, 2, 16),
+      new Date(2015, 3, 16),
+      new Date(2015, 4, 16),
+      new Date(2015, 5, 16),
+      new Date('Wednesday, August 12, 2015'),
+      new Date("08-16-2016"),
+      new Date(1439676000000)
+    ],
+    from: new Date(2012, 1, 1), //Optional
+    to: new Date(2016, 10, 30), //Optional
+    inputDate: new Date(),      //Optional
+    mondayFirst: true,          //Optional
+    disableWeekdays: [0],       //Optional
+    closeOnSelect: false,       //Optional
+    templateType: 'popup'       //Optional
+  };
+  var deadline = {
+    callback: function (val) {  //Mandatory
+      $scope.DeadlineDate = new Date(val);
+      PickTransactionServices.updateDate(val);
+      console.log('Return value from the datepicker popup is : ' + val, new Date(val));
+    },
+    disabledDates: [            //Optional
+      new Date(2016, 2, 16),
+      new Date(2015, 3, 16),
+      new Date(2015, 4, 16),
+      new Date(2015, 5, 16),
+      new Date('Wednesday, August 12, 2015'),
+      new Date("08-16-2016"),
+      new Date(1439676000000)
+    ],
+    from: new Date(2012, 1, 1), //Optional
+    to: new Date(2016, 10, 30), //Optional
+    inputDate: new Date(),      //Optional
+    mondayFirst: true,          //Optional
+    disableWeekdays: [0],       //Optional
+    closeOnSelect: false,       //Optional
+    templateType: 'popup'       //Optional
+  };
+
+  $scope.openDatePicker = function(){
+    ionicDatePicker.openDatePicker(tanggal);
+  };
+  $scope.DeadlinePicker = function(){
+    ionicDatePicker.openDatePicker(deadline);
+  };
+
+  $scope.sorder = false;
+  $scope.ordershow = "fa fa-chevron-up";
+  $scope.trigorder = function() {
+    if ($scope.sorder === false) {
+        $scope.sorder = true;
+        $scope.ordershow = "fa fa-chevron-down";
+    } else if ($scope.sorder === true) {
+        $scope.sorder = false;
+        $scope.ordershow = "fa fa-chevron-up";
+    }
+  };
+
+  $scope.cancelOrder = function(pesanan, selor, selpic) {
+    $scope.pesanan = {};
+    $scope.selpic = {};
+    $scope.selor = {};
+    $scope.sorder = false;
+    $scope.ordershow = "fa fa-chevron-up";
+    $scope.OrderDate = '';
+    $scope.DeadlineDate = '';
+  };
+
+  $scope.createOrder = function (pesanan, selor, selpic) {
+      
+      // Validate form data
+      if (typeof pesanan.express === 'undefined' || pesanan.express === '') {
+          alert("Process 3D belum di Approve");
+          return;
+      }
+      if (typeof selor.picture === 'undefined' || selor.picture === '') {
+          alert("Order belum dipilih");
+          return;
+      }
+      if (typeof selpic.fullname === 'undefined' || selpic.fullname === '') {
+          alert("PIC belum dipilih");
+          return;
+      }
+      if ($scope.OrderDate === 'undefined' || $scope.OrderDate === '') {
+          alert("Tanggal pesanan belum dipilih");
+          return;
+      }
+      if ($scope.DeadlineDate === 'undefined' || $scope.DeadlineDate === '') {
+          alert("Tanggal Deadline belum dipilih");
+          return;
+      }
+
+      if ($scope.inEditMode) {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Editing...'
+        });
+        /* PREPARE DATA FOR FIREBASE*/
+        var photo = $scope.item.photo;
+        var gender = $scope.gender;
+        var title = $scope.title;
+        $scope.temp = {
+            fullname: uses.fullname,
+            picture: photo,
+            address: uses.address,
+            phone: uses.phone,
+            gender: gender,
+            title: title,
+            status: "active",
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+
+        /* SAVE MEMBER DATA */
+        /* SAVE MATERIAL DATA */
+        var employeeref = ContactsFactory.eRef();
+        var newData = employeeref.child($stateParams.employeeId);
+        newData.update($scope.temp, function (ref) {
+        });
+        $ionicHistory.goBack();
+      }else {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Adding...'
+        });
+        /* PREPARE DATA FOR FIREBASE*/
+        var proces = "Wax";
+        $scope.temp = {
+            process: proces,
+            newly: false,
+            addedby: CurrentUserService.fullname,
+            dateupdated: Date.now()
+        }
+
+        /* UPDATE ORDER DATA */
+        var orderref = TransactionFactory.tRef();
+        var newData = orderref.child(selor.$id);
+        newData.update($scope.temp, function (ref) {
+        });
+
+
+        /* PREPARE DATA FOR FIREBASE*/
+        var photo = selor.picture;
+        $scope.temp = {
+            kode: selor.kode,
+            tanggalmulai: $scope.OrderDate.getTime(),
+            tanggalselesai: $scope.DeadlineDate.getTime(),
+            picture: photo,
+            pic: selpic.fullname,
+            approval: pesanan.express,
+            newly: true,
+            addedby: CurrentUserService.fullname,
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+
+        /* SAVE 3D DATA */
+        var ref = fb.child("transactions").child("dimension");
+        ref.push($scope.temp);
+      }
+
+      $ionicLoading.hide();
+      $scope.pesanan = {};
+      $scope.selor = {};
+      $scope.selpic = {};
+      $scope.sorder = false;
+      $scope.ordershow = "fa fa-chevron-up";
+      $scope.OrderDate = '';
+      $scope.DeadlineDate = '';
+      refresh($scope.pesanan, $scope.selor, $scope.selpic, $scope.item, $scope);
+  };
+
+  function refresh(pesanan, $scope, item) {
+    $scope.pesanan = {};
+    $scope.selor = {'jenis': 'not in list'};
+    $scope.selpic = {'fullname': 'not in list'};
+    $scope.sorder = false;
+    $scope.ordershow = "fa fa-chevron-up";
+    $scope.item = {'photo': ''};
+    $scope.OrderDate = '';
+    $scope.DeadlineDate = '';
+  }
+})
+
+.controller('waxCtrl', function($scope, ionicDatePicker, $state, $stateParams, $ionicHistory, $ionicLoading, MasterFactory, TransactionFactory, ContactsFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
+  
+  $scope.pesanan = {'kode': '','pelanggan': '','berat': '','berlian': '','express': ''};
+  $scope.OrderDate = '';
+  $scope.DeadlineDate = '';
+  $scope.contacts = ContactsFactory.getContacts();
+  $scope.contacts.$loaded().then(function (x) {
+    $scope.selpic = $scope.contacts;
+    refresh($scope.contacts, $scope, ContactsFactory);
+  }).catch(function (error) {
+      console.error("Error:", error);
+  });
+  $scope.processCode = "Wax";
+  $scope.transactions = [];
+  $scope.transactions = TransactionFactory.getDimension($scope.processCode);
+  $scope.transactions.$loaded().then(function (x) {
+    $scope.selor = $scope.transactions;
+    refresh($scope.transactions, $scope, TransactionFactory);
+  }).catch(function (error) {
+      console.error("Error:", error);
+  });
+  var tanggal = {
+    callback: function (val) {  //Mandatory
+      $scope.OrderDate = new Date(val);
+      PickTransactionServices.updateDate(val);
+      console.log('Return value from the datepicker popup is : ' + val, new Date(val));
+    },
+    disabledDates: [            //Optional
+      new Date(2016, 2, 16),
+      new Date(2015, 3, 16),
+      new Date(2015, 4, 16),
+      new Date(2015, 5, 16),
+      new Date('Wednesday, August 12, 2015'),
+      new Date("08-16-2016"),
+      new Date(1439676000000)
+    ],
+    from: new Date(2012, 1, 1), //Optional
+    to: new Date(2016, 10, 30), //Optional
+    inputDate: new Date(),      //Optional
+    mondayFirst: true,          //Optional
+    disableWeekdays: [0],       //Optional
+    closeOnSelect: false,       //Optional
+    templateType: 'popup'       //Optional
+  };
+  var deadline = {
+    callback: function (val) {  //Mandatory
+      $scope.DeadlineDate = new Date(val);
+      PickTransactionServices.updateDate(val);
+      console.log('Return value from the datepicker popup is : ' + val, new Date(val));
+    },
+    disabledDates: [            //Optional
+      new Date(2016, 2, 16),
+      new Date(2015, 3, 16),
+      new Date(2015, 4, 16),
+      new Date(2015, 5, 16),
+      new Date('Wednesday, August 12, 2015'),
+      new Date("08-16-2016"),
+      new Date(1439676000000)
+    ],
+    from: new Date(2012, 1, 1), //Optional
+    to: new Date(2016, 10, 30), //Optional
+    inputDate: new Date(),      //Optional
+    mondayFirst: true,          //Optional
+    disableWeekdays: [0],       //Optional
+    closeOnSelect: false,       //Optional
+    templateType: 'popup'       //Optional
+  };
+
+  $scope.openDatePicker = function(){
+    ionicDatePicker.openDatePicker(tanggal);
+  };
+  $scope.DeadlinePicker = function(){
+    ionicDatePicker.openDatePicker(deadline);
+  };
+
+  $scope.sorder = false;
+  $scope.ordershow = "fa fa-chevron-up";
+  $scope.trigorder = function() {
+    if ($scope.sorder === false) {
+        $scope.sorder = true;
+        $scope.ordershow = "fa fa-chevron-down";
+    } else if ($scope.sorder === true) {
+        $scope.sorder = false;
+        $scope.ordershow = "fa fa-chevron-up";
+    }
+  };
+
+  $scope.cancelOrder = function(pesanan, selor, selpic) {
+    $scope.pesanan = {};
+    $scope.selpic = {};
+    $scope.selor = {};
+    $scope.sorder = false;
+    $scope.ordershow = "fa fa-chevron-up";
+    $scope.OrderDate = '';
+    $scope.DeadlineDate = '';
+  };
+
+  $scope.createOrder = function (pesanan, selor, selpic) {
+      
+      // Validate form data
+      if (typeof pesanan.express === 'undefined' || pesanan.express === '') {
+          alert("Process Wax belum di Approve");
+          return;
+      }
+      if (typeof selor.picture === 'undefined' || selor.picture === '') {
+          alert("Order belum dipilih");
+          return;
+      }
+      if (typeof selpic.fullname === 'undefined' || selpic.fullname === '') {
+          alert("PIC belum dipilih");
+          return;
+      }
+      if ($scope.OrderDate === 'undefined' || $scope.OrderDate === '') {
+          alert("Tanggal pesanan belum dipilih");
+          return;
+      }
+      if ($scope.DeadlineDate === 'undefined' || $scope.DeadlineDate === '') {
+          alert("Tanggal Deadline belum dipilih");
+          return;
+      }
+
+      if ($scope.inEditMode) {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Editing...'
+        });
+        /* PREPARE DATA FOR FIREBASE*/
+        var photo = $scope.item.photo;
+        var gender = $scope.gender;
+        var title = $scope.title;
+        $scope.temp = {
+            fullname: uses.fullname,
+            picture: photo,
+            address: uses.address,
+            phone: uses.phone,
+            gender: gender,
+            title: title,
+            status: "active",
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+
+        /* SAVE MEMBER DATA */
+        /* SAVE MATERIAL DATA */
+        var employeeref = ContactsFactory.eRef();
+        var newData = employeeref.child($stateParams.employeeId);
+        newData.update($scope.temp, function (ref) {
+        });
+        $ionicHistory.goBack();
+      }else {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Adding...'
+        });
+        /* PREPARE DATA FOR FIREBASE*/
+        var proces = "Casting";
+        $scope.temp = {
+            process: proces,
+            newly: false,
+            addedby: CurrentUserService.fullname,
+            dateupdated: Date.now()
+        }
+
+        /* UPDATE ORDER DATA */
+        var orderref = TransactionFactory.tRef();
+        var newData = orderref.child(selor.$id);
+        newData.update($scope.temp, function (ref) {
+        });
+
+
+        /* PREPARE DATA FOR FIREBASE*/
+        var photo = selor.picture;
+        $scope.temp = {
+            kode: selor.kode,
+            tanggalmulai: $scope.OrderDate.getTime(),
+            tanggalselesai: $scope.DeadlineDate.getTime(),
+            picture: photo,
+            pic: selpic.fullname,
+            approval: pesanan.express,
+            newly: true,
+            addedby: CurrentUserService.fullname,
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+
+        /* SAVE 3D DATA */
+        var ref = fb.child("transactions").child("wax");
+        ref.push($scope.temp);
+      }
+
+      $ionicLoading.hide();
+      $scope.pesanan = {};
+      $scope.selor = {};
+      $scope.selpic = {};
+      $scope.sorder = false;
+      $scope.ordershow = "fa fa-chevron-up";
+      $scope.OrderDate = '';
+      $scope.DeadlineDate = '';
+      refresh($scope.pesanan, $scope.selor, $scope.selpic, $scope.item, $scope);
+  };
+
+  function refresh(pesanan, $scope, item) {
+    $scope.pesanan = {};
+    $scope.selor = {'jenis': 'not in list'};
+    $scope.selpic = {'fullname': 'not in list'};
+    $scope.sorder = false;
+    $scope.ordershow = "fa fa-chevron-up";
+    $scope.item = {'photo': ''};
+    $scope.OrderDate = '';
+    $scope.DeadlineDate = '';
+  }
+})
+
+.controller('castingCtrl', function($scope, ionicDatePicker, $state, $stateParams, $ionicHistory, $ionicLoading, MasterFactory, TransactionFactory, ContactsFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
+  
+  $scope.pesanan = {'kode': '','beratawal': '','beratakhir': '','berlian': '','express': ''};
+  $scope.OrderDate = '';
+  $scope.DeadlineDate = '';
+  $scope.materials = [];
+  $scope.materials = MasterFactory.getMaterials();
+  $scope.materials.$loaded().then(function (x) {
+    $scope.selmat = $scope.materials;
+    refresh($scope.materials, $scope, MasterFactory);
+  }).catch(function (error) {
+      console.error("Error:", error);
+  });
+  $scope.contacts = ContactsFactory.getContacts();
+  $scope.contacts.$loaded().then(function (x) {
+    $scope.selpic = $scope.contacts;
+    refresh($scope.contacts, $scope, ContactsFactory);
+  }).catch(function (error) {
+      console.error("Error:", error);
+  });
+  $scope.processCode = "Casting";
+  $scope.transactions = [];
+  $scope.transactions = TransactionFactory.getDimension($scope.processCode);
+  $scope.transactions.$loaded().then(function (x) {
+    $scope.selor = $scope.transactions;
+    refresh($scope.transactions, $scope, TransactionFactory);
+  }).catch(function (error) {
+      console.error("Error:", error);
+  });
+  var tanggal = {
+    callback: function (val) {  //Mandatory
+      $scope.OrderDate = new Date(val);
+      PickTransactionServices.updateDate(val);
+      console.log('Return value from the datepicker popup is : ' + val, new Date(val));
+    },
+    disabledDates: [            //Optional
+      new Date(2016, 2, 16),
+      new Date(2015, 3, 16),
+      new Date(2015, 4, 16),
+      new Date(2015, 5, 16),
+      new Date('Wednesday, August 12, 2015'),
+      new Date("08-16-2016"),
+      new Date(1439676000000)
+    ],
+    from: new Date(2012, 1, 1), //Optional
+    to: new Date(2016, 10, 30), //Optional
+    inputDate: new Date(),      //Optional
+    mondayFirst: true,          //Optional
+    disableWeekdays: [0],       //Optional
+    closeOnSelect: false,       //Optional
+    templateType: 'popup'       //Optional
+  };
+  var deadline = {
+    callback: function (val) {  //Mandatory
+      $scope.DeadlineDate = new Date(val);
+      PickTransactionServices.updateDate(val);
+      console.log('Return value from the datepicker popup is : ' + val, new Date(val));
+    },
+    disabledDates: [            //Optional
+      new Date(2016, 2, 16),
+      new Date(2015, 3, 16),
+      new Date(2015, 4, 16),
+      new Date(2015, 5, 16),
+      new Date('Wednesday, August 12, 2015'),
+      new Date("08-16-2016"),
+      new Date(1439676000000)
+    ],
+    from: new Date(2012, 1, 1), //Optional
+    to: new Date(2016, 10, 30), //Optional
+    inputDate: new Date(),      //Optional
+    mondayFirst: true,          //Optional
+    disableWeekdays: [0],       //Optional
+    closeOnSelect: false,       //Optional
+    templateType: 'popup'       //Optional
+  };
+
+  $scope.openDatePicker = function(){
+    ionicDatePicker.openDatePicker(tanggal);
+  };
+  $scope.DeadlinePicker = function(){
+    ionicDatePicker.openDatePicker(deadline);
+  };
+
+  $scope.sorder = false;
+  $scope.ordershow = "fa fa-chevron-up";
+  $scope.trigorder = function() {
+    if ($scope.sorder === false) {
+        $scope.sorder = true;
+        $scope.ordershow = "fa fa-chevron-down";
+    } else if ($scope.sorder === true) {
+        $scope.sorder = false;
+        $scope.ordershow = "fa fa-chevron-up";
+    }
+  };
+
+  $scope.cancelOrder = function(pesanan, selor, selpic, selmat) {
+    $scope.pesanan = {};
+    $scope.selpic = {};
+    $scope.selor = {};
+    $scope.selmat = {};
+    $scope.sorder = false;
+    $scope.ordershow = "fa fa-chevron-up";
+    $scope.OrderDate = '';
+    $scope.DeadlineDate = '';
+  };
+
+  $scope.createOrder = function (pesanan, selor, selpic, selmat) {
+      
+      // Validate form data
+      if (typeof pesanan.beratawal === 'undefined' || pesanan.beratawal === '') {
+          alert("Bahan Mulai belum diisi");
+          return;
+      }
+      if (typeof pesanan.beratakhir === 'undefined' || pesanan.beratakhir === '') {
+          alert("Bahan Akhir belum diisi");
+          return;
+      }
+      if (typeof selor.picture === 'undefined' || selor.picture === '') {
+          alert("Order belum dipilih");
+          return;
+      }
+      if (typeof selpic.fullname === 'undefined' || selpic.fullname === '') {
+          alert("PIC belum dipilih");
+          return;
+      }
+      if ($scope.OrderDate === 'undefined' || $scope.OrderDate === '') {
+          alert("Tanggal pesanan belum dipilih");
+          return;
+      }
+      if ($scope.DeadlineDate === 'undefined' || $scope.DeadlineDate === '') {
+          alert("Tanggal Deadline belum dipilih");
+          return;
+      }
+      if (typeof selmat.jenis === 'undefined' || selmat.jenis === '') {
+          alert("Jenis Material belum dipilih");
+          return;
+      }
+
+      if ($scope.inEditMode) {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Editing...'
+        });
+        /* PREPARE DATA FOR FIREBASE*/
+        var photo = $scope.item.photo;
+        var gender = $scope.gender;
+        var title = $scope.title;
+        $scope.temp = {
+            fullname: uses.fullname,
+            picture: photo,
+            address: uses.address,
+            phone: uses.phone,
+            gender: gender,
+            title: title,
+            status: "active",
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+
+        /* SAVE MEMBER DATA */
+        /* SAVE MATERIAL DATA */
+        var employeeref = ContactsFactory.eRef();
+        var newData = employeeref.child($stateParams.employeeId);
+        newData.update($scope.temp, function (ref) {
+        });
+        $ionicHistory.goBack();
+      }else {
+        $ionicLoading.show({
+            template: '<ion-spinner icon="ios"></ion-spinner><br>Adding...'
+        });
+        /* PREPARE DATA FOR FIREBASE*/
+        var proces = "Finishing";
+        $scope.temp = {
+            process: proces,
+            newly: false,
+            addedby: CurrentUserService.fullname,
+            dateupdated: Date.now()
+        }
+
+        /* UPDATE ORDER DATA */
+        var orderref = TransactionFactory.tRef();
+        var newData = orderref.child(selor.$id);
+        newData.update($scope.temp, function (ref) {
+        });
+
+
+        /* PREPARE DATA FOR FIREBASE*/
+        var sank = parseFloat(pesanan.beratawal) - parseFloat(pesanan.beratakhir);
+        var sankcost = sank * parseFloat(selmat.harga);
+        var photo = selor.picture;
+        $scope.temp = {
+            kode: selor.kode,
+            tanggalmulai: $scope.OrderDate.getTime(),
+            tanggalselesai: $scope.DeadlineDate.getTime(),
+            picture: photo,
+            pic: selpic.fullname,
+            beratawal: pesanan.beratawal,
+            beratakhir: pesanan.beratakhir,
+            sank: sank.toFixed(2),
+            sankcost: sankcost.toFixed(0),
+            newly: true,
+            addedby: CurrentUserService.fullname,
+            datecreated: Date.now(),
+            dateupdated: Date.now()
+        }
+
+        /* SAVE 3D DATA */
+        var ref = fb.child("transactions").child("casting");
+        ref.push($scope.temp);
+      }
+
+      $ionicLoading.hide();
+      $scope.pesanan = {};
+      $scope.selor = {};
+      $scope.selpic = {};
+      $scope.selmat = {};
+      $scope.sorder = false;
+      $scope.ordershow = "fa fa-chevron-up";
+      $scope.OrderDate = '';
+      $scope.DeadlineDate = '';
+      refresh($scope.pesanan, $scope.selor, $scope.selpic, $scope.item, $scope);
+  };
+
+  function refresh(pesanan, $scope, item) {
+    $scope.pesanan = {};
+    $scope.selor = {'jenis': 'not in list'};
+    $scope.selpic = {'fullname': 'not in list'};
+    $scope.selmat = {'jenis': 'not in list'};
+    $scope.sorder = false;
+    $scope.ordershow = "fa fa-chevron-up";
+    $scope.item = {'photo': ''};
+    $scope.OrderDate = '';
+    $scope.DeadlineDate = '';
+  }
+})
+
 .controller('inventoryusesCtrl', function($scope, $state, $stateParams, $ionicHistory, $ionicLoading, MasterFactory, ContactsFactory, CurrentUserService, PickTransactionServices, $ionicPopup, myCache) {
 
   $scope.uses = {'number': '','inventory': '','PIC': '','photo': '','picture': ''};
@@ -488,7 +1145,6 @@ angular.module('starter.controllers', [])
         $scope.temp = {
             stock: currentstock,
             addedby: CurrentUserService.fullname,
-            datecreated: Date.now(),
             dateupdated: Date.now()
         }
 

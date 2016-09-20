@@ -79,6 +79,36 @@ angular.module('starter', ['ionic', 'starter.controllers', 'ionic-datepicker', '
     }
   })
 
+  .state('app.dimension', {
+    url: '/dimension',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/dimension.html',
+        controller: 'dimensionCtrl'
+      }
+    }
+  })
+
+  .state('app.wax', {
+    url: '/wax',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/wax.html',
+        controller: 'waxCtrl'
+      }
+    }
+  })
+
+  .state('app.casting', {
+    url: '/casting',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/casting.html',
+        controller: 'castingCtrl'
+      }
+    }
+  })
+
   .state('app.inventoryuses', {
     url: '/inventoryuses/:inventoryusesId',
     views: {

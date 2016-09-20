@@ -41,11 +41,11 @@
                     <a>
                       <span class="image"><img src="{{ transaction.picture }}" alt="Product Image" /></span>
                       <span>
-                        <span>{{transaction.pelanggan}}</span>
+                        <span>{{transaction.product}}</span>
                         <span class="time">{{ transaction.datecreated | amCalendar:referenceTime:formats }}</span>
                       </span>
                       <span class="message">
-                        {{transaction.product}}
+                        {{transaction.pelanggan}}
                       </span>
                     </a>
                   </li>
@@ -100,9 +100,9 @@
             </li>
             <li ng-click="trigprod()" class="{{prod}}"><a><i class="fa fa-desktop"></i> Production <span class="fa fa-chevron-down"></span></a>
               <ul class="nav child_menu" style={{prodshow}}>
-                <li><a href="form.html">3D</a></li>
-                <li><a href="form_advanced.html">Wax</a></li>
-                <li><a href="form_validation.html">Casting</a></li>
+                <li><a menu-close href="#/app/dimension">3D</a></li>
+                <li><a menu-close href="#/app/wax">Wax</a></li>
+                <li><a menu-close href="#/app/casting">Casting</a></li>
                 <li><a href="form_wizards.html">Finishing</a></li>
                 <li><a href="form_upload.html">Setting</a></li>
                 <li><a href="form_buttons.html">Polishing</a></li>
