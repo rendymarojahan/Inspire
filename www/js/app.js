@@ -109,6 +109,46 @@ angular.module('starter', ['ionic', 'starter.controllers', 'ionic-datepicker', '
     }
   })
 
+  .state('app.finishing', {
+    url: '/finishing',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/finishing.html',
+        controller: 'finishingCtrl'
+      }
+    }
+  })
+
+  .state('app.setting', {
+    url: '/setting',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/setting.html',
+        controller: 'settingCtrl'
+      }
+    }
+  })
+
+  .state('app.polishing', {
+    url: '/polishing',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/polishing.html',
+        controller: 'polishingCtrl'
+      }
+    }
+  })
+
+  .state('app.chrome', {
+    url: '/chrome',
+    views: {
+      'menuContent': {
+        templateUrl: 'templates/chrome.html',
+        controller: 'chromeCtrl'
+      }
+    }
+  })
+
   .state('app.inventoryuses', {
     url: '/inventoryuses/:inventoryusesId',
     views: {

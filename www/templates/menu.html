@@ -87,9 +87,9 @@
           <ul class="nav side-menu">
             <li ng-click="trighome()" class="{{home}}"><a><i class="fa fa-home"></i> Home <span class="fa fa-chevron-down"></span></a>
               <ul class="nav child_menu" style={{homeshow}}>
-                <li><a menu-close href="#/app/dashboard/">Dashboard</a></li>
-                <li><a menu-close href="#/app/dashboard/">Dashboard2</a></li>
-                <li><a menu-close href="#/app/dashboard/">Dashboard3</a></li>
+                <li><a menu-close href="#/app/dashboard/{{userid}}/{{level}}">Dashboard</a></li>
+                <li><a menu-close href="#/app/dashboard/{{userid}}/{{level}}">Dashboard2</a></li>
+                <li><a menu-close href="#/app/dashboard/{{userid}}/{{level}}">Dashboard3</a></li>
               </ul>
             </li>
             <li ng-click="trigorder()" class="{{order}}"><a><i class="fa fa-edit"></i> Order <span class="fa fa-chevron-down"></span></a>
@@ -103,10 +103,10 @@
                 <li><a menu-close href="#/app/dimension">3D</a></li>
                 <li><a menu-close href="#/app/wax">Wax</a></li>
                 <li><a menu-close href="#/app/casting">Casting</a></li>
-                <li><a href="form_wizards.html">Finishing</a></li>
-                <li><a href="form_upload.html">Setting</a></li>
-                <li><a href="form_buttons.html">Polishing</a></li>
-                <li><a href="form_buttons.html">Chrome</a></li>
+                <li><a menu-close href="#/app/finishing">Finishing</a></li>
+                <li><a menu-close href="#/app/setting">Setting</a></li>
+                <li><a menu-close href="#/app/polishing">Polishing</a></li>
+                <li><a menu-close href="#/app/chrome">Chrome</a></li>
               </ul>
             </li>
             <li ng-click="triginven()" class="{{inven}}"><a><i class="fa fa-table"></i> Inventory Uses <span class="fa fa-chevron-down"></span></a>
@@ -117,8 +117,8 @@
             </li>
             <li ng-click="trigpurc()" class="{{purc}}"><a><i class="fa fa-bar-chart-o"></i> Purchasing <span class="fa fa-chevron-down"></span></a>
               <ul class="nav child_menu" style={{purcshow}}>
-                <li><a href="chartjs.html">Raw Material</a></li>
-                <li><a href="chartjs2.html">Inventory</a></li>
+                <li><a menu-close href="#/app/addmaterial">Raw Material</a></li>
+                <li><a menu-close href="#/app/addinventory">Inventory</a></li>
               </ul>
             </li>
             <li ng-click="trigmast()" class="{{mast}}"><a><i class="fa fa-clone"></i>Master Data <span class="fa fa-chevron-down"></span></a>

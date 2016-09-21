@@ -241,196 +241,27 @@ angular.module('starter.services', [])
 
 .factory('AccountsFactory', function ($firebaseArray, $q, myCache, MembersFactory, CurrentUserService, $timeout) {
         var ref = {};
-        var members = {};
-        var allaccounts = {};
-        var allaccounttypes = {};
-        var alltransactions = {};
-        var transactionRef = {};
-        var grouptransaction = {};
-        var membertransaction = {};
-        //var transactionsbycategoryRef = {};
-        //var transactionsbypayeeRef = {};
-        var thisGroupId = myCache.get('thisGroupId');
-        var thisMemberId = myCache.get('thisMemberId');
+        var usersRef = {};
+        var uRef = fb.child("users");
         return {
             ref: function () {
-                ref = fb.child("members").child(thisMemberId).child("member_accounts");
+                ref = fb.child("publics").child(thisPublicId).child(thisUserId);
                 return ref;
             },
-            getAccounts: function () {
-                ref = fb.child("members").child(thisMemberId).child("member_accounts");
-                allaccounts = $firebaseArray(ref);
-                return allaccounts;
+            uRef: function () {
+                return uRef;
             },
-            getAccount: function (accountid) {
-                var thisAccount = allaccounts.$getRecord(accountid);
-                return thisAccount;
+            getUsers: function () {
+                ref = fb.child("users").orderByKey();
+                usersRef = $firebaseArray(ref);
+                return usersRef;
             },
-            getAccountTypes: function () {
-                ref = fb.child("members").child(thisMemberId).child("member_account_types");
-                allaccounttypes = $firebaseArray(ref);
-                return allaccounttypes;
+            getUser: function (employeeid) {
+                var thisEmployee = usersRef.$getRecord(employeeid);
+                return thisEmployee;
             },
-            getTransaction: function (transactionid) {
-                var thisTransaction = alltransactions.$getRecord(transactionid);
-                return thisTransaction;
-            },
-            getGroupTransaction: function () {
-                ref = fb.child("members").child(thisMemberId).child("member_transactions");
-                grouptransaction = $firebaseArray(ref);
-                return grouptransaction;
-            },
-            getMemberTransaction: function (memberid) {
-                ref = fb.child("members").child(memberid).child("member_transactions");
-                membertransaction = $firebaseArray(ref);
-                return membertransaction;
-            },
-            getMemberTransactionsByDate: function (memberid, dateid) {
-                ref = fb.child("members").child(memberid).child("member_transactions").orderByChild('date');
-                members = $firebaseArray(ref);
-                var deferred = $q.defer();
-                var matches = members.filter(function (member) {
-                if (moment(member.date).format('MMMM DD, YYYY').toLowerCase().indexOf(dateid.toLowerCase()) !== -1) {
-                    return true;
-                    }
-                });
-                $timeout(function () {
-                deferred.resolve(matches);
-                }, 100);
-                return deferred.promise;
-            },
-            getTransactionsByDate: function (accountid) {
-                ref = fb.child("members").child(thisMemberId).child("member_transactions").orderByChild('accountId').startAt(accountid).endAt(accountid);
-                alltransactions = $firebaseArray(ref);
-                return alltransactions;
-            },
-            getTransactionRef: function (accountid, transactionid) {
-                transactionRef = fb.child("members").child(thisMemberId).child("member_transactions").child(accountid).child(transactionid);
-                return transactionRef;
-            },
-            //getTransactionByCategoryRef: function (categoryid, transactionid) {
-            //    transactionsbycategoryRef = fb.child("groups").child(thisGroupId).child("membertransactionsbycategory").child(categoryid).child(transactionid);
-            //    return transactionsbycategoryRef;
-            //},
-            //getTransactionByPayeeRef: function (payeeid, transactionid) {
-            //    transactionsbypayeeRef = fb.child("groups").child(thisGroupId).child("membertransactionsbypayee").child(payeeid).child(transactionid);
-            //    return transactionsbypayeeRef;
-            //},
-            createNewAccount: function (currentItem) {
-                // Create the account
-                allaccounts.$add(currentItem).then(function (newChildRef) { });
-            },
-            saveAccount: function (account) {
-                allaccounts.$save(account).then(function (ref) {
-                    
-                });
-            },
-            createTransaction: function (currentAccountId, currentItem) {
-                //
-                var connectedRef = new Firebase('https://zezi.firebaseio.com/.info/connected');
-                connectedRef.on('value', function(snap) {
-                  if (snap.val() === true) {
-                    var otherAccountId = '';
-                    var OtherTransaction = {};
-                    //
-                    if (currentItem.istransfer) {
-                        angular.copy(currentItem, OtherTransaction);
-                        if (currentAccountId === currentItem.accountToId) {
-                            //For current account: transfer is coming into the current account as an income
-                            currentItem.type = 'Income';
-                            accountId = currentItem.accountToId;
-                            otherAccountId = currentItem.accountFromId;
-                            OtherTransaction.type = 'Expense';
-                        } else {
-                            //For current account: transfer is moving into the other account as an expense
-                            currentItem.type = 'Expense';
-                            accountId = currentItem.accountFromId;
-                            otherAccountId = currentItem.accountToId;
-                            OtherTransaction.type = 'Income';
-                        }
-                    } else {
-                        currentAccountId = currentItem.accountId;
-                    }
-                    //
-                    // Save transaction
-                    //
-                    var ref = fb.child("members").child(thisMemberId).child("member_transactions");
-                    var newChildRef = ref.push(currentItem);
-                    // Save posting public
-                    var refPublic = fb.child("publics");
-                    refPublic.push({ name: currentItem.addedby, 
-                                     location: currentItem.payee,
-                                     userid: currentItem.userid,
-                                     note: currentItem.note,
-                                     photo: currentItem.photo,
-                                     date: currentItem.date,
-                                     likes:'',
-                                     views:'',
-                                     comments:''
-                                  });
-                    //
-                    // Update preferences - Last Date Used
-                    //
-                    var fbAuth = fb.getAuth();
-                    var usersRef = MembersFactory.ref();
-                    var myUser = usersRef.child(fbAuth.uid);
-                    var temp = {
-                        lastdate: currentItem.date,
-                        note: currentItem.note
-                    }
-                    myUser.update(temp, function () {
-                        CurrentUserService.lastdate = temp.lastdate;
-                    });
-                    var payee = {};
-                    var payeeRef = fb.child("groups").child(thisGroupId).child("memberpayees").child(currentItem.payeeid);
-                    if (currentItem.type === "Income") {
-                        payee = {
-                            lastamountincome: currentItem.amount,
-                            lastcategoryincome: currentItem.category,
-                            lastcategoryidincome: currentItem.categoryid
-                        };
-                    } else if (currentItem.type === "Expense") {
-                        payee = {
-                            lastamount: currentItem.amount,
-                            lastcategory: currentItem.category,
-                            lastcategoryid: currentItem.categoryid
-                        };
-                    }
-                    payeeRef.update(payee);
-
-                    if (currentItem.istransfer) {
-                        //
-                        // Save the other transaction, get the transaction id and link it to this transaction
-                        //
-                        OtherTransaction.linkedtransactionid = newChildRef.key();
-                        var othertransRef = fb.child("members").child(thisMemberId).child("transfertransactions").child(otherAccountId);
-                        var sync = $firebaseArray(othertransRef);
-                        sync.$add(OtherTransaction).then(function (otherChildRef) {
-                            //
-                            // Update this transaction with other transaction id
-                            newChildRef.update({ linkedtransactionid: otherChildRef.key() })
-                            //
-                        });
-                    }
-                    var con = myConnectionsRef.push(true);
-                        
-                    con.onDisconnect().remove();
-                    // when I disconnect, update the last time I was seen online
-                    lastOnlineRef.onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
-                  }
-
-                    window.localStorage.set("saved", JSON.stringify(currentItem));
-                });
-                
-            },
-            deleteTransaction: function () {
-                return alltransactions;
-            },
-            saveTransaction: function (transaction) {
-                alltransactions.$save(transaction).then(function (ref) {
-                    //ref.key() = transaction.$id;
-                });
-            }
+            
+            
         };
 })
 
@@ -540,7 +371,7 @@ angular.module('starter.services', [])
             this.fullname = user.fullname;
             this.level = user.level;
             this.email = user.email;
-            this.group_id = user.group_id;
+            this.id = user.$id;
             this.public_id = user.public_id;
             this.defaultdate = user.defaultdate;
             this.defaultbalance = user.defaultbalance;
